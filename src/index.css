@@ -2,41 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* MundialPredict Design System - FIFA World Cup 2026 Theme
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core Brand Colors */
+    --background: 222 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Football Field Green - Primary Brand */
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 142 76% 46%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Championship Gold - Secondary */
+    --secondary: 43 96% 56%;
+    --secondary-foreground: 222 84% 4.9%;
+    --secondary-glow: 43 96% 66%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted Tones */
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Success/Win Green */
+    --accent: 142 76% 36%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
+    /* Danger/Loss Red */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* UI Elements */
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 142 76% 36%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Custom Gradients */
+    --gradient-field: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
+    --gradient-trophy: linear-gradient(135deg, hsl(43 96% 56%), hsl(43 96% 66%));
+    --gradient-stadium: linear-gradient(180deg, hsl(222 84% 4.9%), hsl(222 47% 11%));
+    --gradient-hero: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(43 96% 56%) 100%);
+    
+    /* Custom Shadows */
+    --shadow-glow-green: 0 0 40px hsl(142 76% 36% / 0.3);
+    --shadow-glow-gold: 0 0 40px hsl(43 96% 56% / 0.3);
+    --shadow-card: 0 10px 30px -10px hsl(0 0% 0% / 0.3);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
@@ -102,4 +126,75 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer components {
+  /* Custom Button Variants */
+  .btn-hero {
+    @apply bg-primary text-primary-foreground hover:bg-primary-glow;
+    @apply shadow-lg hover:shadow-[var(--shadow-glow-green)];
+    @apply transition-[var(--transition-smooth)];
+  }
+  
+  .btn-trophy {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary-glow;
+    @apply shadow-lg hover:shadow-[var(--shadow-glow-gold)];
+    @apply transition-[var(--transition-smooth)];
+  }
+  
+  /* Match Cards */
+  .match-card {
+    @apply bg-card border border-border rounded-lg p-6;
+    @apply shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-glow-green)];
+    @apply transition-[var(--transition-smooth)] hover:scale-105;
+  }
+  
+  /* Gradients */
+  .gradient-field {
+    background: var(--gradient-field);
+  }
+  
+  .gradient-trophy {
+    background: var(--gradient-trophy);
+  }
+  
+  .gradient-stadium {
+    background: var(--gradient-stadium);
+  }
+  
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+}
+
+@layer utilities {
+  /* Custom Animations */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+  
+  .animate-bounce-in {
+    animation: bounceIn 0.6s ease-out;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 20px hsl(142 76% 36% / 0.3); }
+  to { box-shadow: 0 0 40px hsl(142 76% 36% / 0.6); }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
 }
