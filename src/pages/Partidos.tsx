@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Trophy, Clock } from "lucide-react";
 
 const Partidos = () => {
-  const [activeTab, setActiveTab] = useState("proximos");
+  const [activeTab, setActiveTab] = useState("upcoming");
 
   const upcomingMatches = [
     {
@@ -59,13 +59,13 @@ const Partidos = () => {
       { name: "Qatar", flag: "🇶🇦", played: 3, won: 2, drawn: 1, lost: 0, gf: 5, ga: 2, points: 7 },
       { name: "Ecuador", flag: "🇪🇨", played: 3, won: 1, drawn: 2, lost: 0, gf: 4, ga: 3, points: 5 },
       { name: "Senegal", flag: "🇸🇳", played: 3, won: 1, drawn: 1, lost: 1, gf: 3, ga: 3, points: 4 },
-      { name: "Países Bajos", flag: "🇳🇱", played: 3, won: 0, drawn: 0, lost: 3, gf: 2, ga: 6, points: 0 }
+      { name: "Netherlands", flag: "🇳🇱", played: 3, won: 0, drawn: 0, lost: 3, gf: 2, ga: 6, points: 0 }
     ]},
     { group: "B", teams: [
-      { name: "Inglaterra", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", played: 3, won: 2, drawn: 1, lost: 0, gf: 6, ga: 2, points: 7 },
-      { name: "Estados Unidos", flag: "🇺🇸", played: 3, won: 1, drawn: 2, lost: 0, gf: 3, ga: 2, points: 5 },
-      { name: "Irán", flag: "🇮🇷", played: 3, won: 1, drawn: 0, lost: 2, gf: 2, ga: 4, points: 3 },
-      { name: "Gales", flag: "🏴󠁧󠁢󠁷󠁬󠁳󠁿", played: 3, won: 0, drawn: 1, lost: 2, gf: 1, ga: 4, points: 1 }
+      { name: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", played: 3, won: 2, drawn: 1, lost: 0, gf: 6, ga: 2, points: 7 },
+      { name: "United States", flag: "🇺🇸", played: 3, won: 1, drawn: 2, lost: 0, gf: 3, ga: 2, points: 5 },
+      { name: "Iran", flag: "🇮🇷", played: 3, won: 1, drawn: 0, lost: 2, gf: 2, ga: 4, points: 3 },
+      { name: "Wales", flag: "🏴󠁧󠁢󠁷󠁬󠁳󠁿", played: 3, won: 0, drawn: 1, lost: 2, gf: 1, ga: 4, points: 1 }
     ]}
   ];
 
@@ -83,7 +83,7 @@ const Partidos = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 md:pb-0">
       <Navbar />
       
       <div className="pt-20 pb-10 px-4">
@@ -92,33 +92,33 @@ const Partidos = () => {
           <div className="mb-8 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               <span className="gradient-hero bg-clip-text text-transparent">
-                Partidos FIFA 2026
+                FIFA 2026 Matches
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Sigue todos los partidos del Mundial en tiempo real
+              Follow all World Cup matches in real time
             </p>
           </div>
 
           {/* Tabs Navigation */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="proximos" className="flex items-center space-x-2">
+              <TabsTrigger value="upcoming" className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4" />
-                <span>Próximos</span>
+                <span>Upcoming</span>
               </TabsTrigger>
-              <TabsTrigger value="vivo" className="flex items-center space-x-2">
+              <TabsTrigger value="live" className="flex items-center space-x-2">
                 <Clock className="h-4 w-4" />
-                <span>En Vivo</span>
+                <span>Live</span>
               </TabsTrigger>
-              <TabsTrigger value="posiciones" className="flex items-center space-x-2">
+              <TabsTrigger value="standings" className="flex items-center space-x-2">
                 <Trophy className="h-4 w-4" />
-                <span>Posiciones</span>
+                <span>Standings</span>
               </TabsTrigger>
             </TabsList>
 
             {/* Upcoming Matches */}
-            <TabsContent value="proximos" className="space-y-6">
+            <TabsContent value="upcoming" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {upcomingMatches.map((match, index) => (
                   <MatchCard key={index} {...match} />
@@ -127,19 +127,19 @@ const Partidos = () => {
               
               <div className="text-center">
                 <Button variant="outline" size="lg">
-                  Cargar Más Partidos
+                  Load More Matches
                 </Button>
               </div>
             </TabsContent>
 
             {/* Live Matches */}
-            <TabsContent value="vivo" className="space-y-6">
+            <TabsContent value="live" className="space-y-6">
               {liveMatches.length > 0 ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                   {liveMatches.map((match, index) => (
                     <Card key={index} className="match-card relative">
                       <Badge className="absolute top-4 right-4 bg-destructive text-destructive-foreground animate-pulse">
-                        EN VIVO
+                        LIVE
                       </Badge>
                       
                       <div className="space-y-4">
@@ -170,7 +170,7 @@ const Partidos = () => {
                         </div>
                         
                         <Button className="w-full btn-hero">
-                          Ver Partido en Vivo
+                          Watch Live Match
                         </Button>
                       </div>
                     </Card>
@@ -179,29 +179,29 @@ const Partidos = () => {
               ) : (
                 <Card className="p-12 text-center">
                   <Clock className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-xl font-semibold mb-2">No hay partidos en vivo</h3>
+                  <h3 className="text-xl font-semibold mb-2">No live matches</h3>
                   <p className="text-muted-foreground">
-                    Los partidos en vivo aparecerán aquí cuando comiencen
+                    Live matches will appear here when they start
                   </p>
                 </Card>
               )}
             </TabsContent>
 
             {/* Group Standings */}
-            <TabsContent value="posiciones" className="space-y-6">
+            <TabsContent value="standings" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {groupStandings.map((group) => (
                   <Card key={group.group} className="p-6">
                     <h3 className="text-xl font-bold mb-4 flex items-center">
                       <Trophy className="h-5 w-5 mr-2 text-secondary" />
-                      Grupo {group.group}
+                      Group {group.group}
                     </h3>
                     
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-8">#</TableHead>
-                          <TableHead>Equipo</TableHead>
+                          <TableHead>Team</TableHead>
                           <TableHead className="text-center">PJ</TableHead>
                           <TableHead className="text-center">G</TableHead>
                           <TableHead className="text-center">E</TableHead>

@@ -26,40 +26,40 @@ const Perfil = () => {
     globalRank: 42,
     countryRank: 8,
     badges: [
-      { name: "Predictor Maestro", icon: "🏆", description: "50+ predicciones correctas" },
-      { name: "Racha de Oro", icon: "🔥", description: "10 predicciones consecutivas" },
-      { name: "Fan México", icon: "🇲🇽", description: "Apoyaste a México 20 veces" },
-      { name: "Early Adopter", icon: "⭐", description: "Usuario de la primera hora" }
+      { name: "Master Predictor", icon: "🏆", description: "50+ correct predictions" },
+      { name: "Golden Streak", icon: "🔥", description: "10 consecutive predictions" },
+      { name: "Mexico Fan", icon: "🇲🇽", description: "Supported Mexico 20 times" },
+      { name: "Early Adopter", icon: "⭐", description: "First hour user" }
     ]
   };
 
   const betHistory = [
     {
       id: 1,
-      match: "México vs Argentina",
-      prediction: "México gana",
+      match: "Mexico vs Argentina",
+      prediction: "Mexico wins",
       amount: "100 CHZ",
       odds: "2.8x",
-      result: "Ganada",
+      result: "Won",
       profit: "+180 CHZ",
       date: "15 Jun 2026",
       status: "won"
     },
     {
       id: 2,
-      match: "Brasil vs España",
-      prediction: "Empate",
+      match: "Brazil vs Spain",
+      prediction: "Draw",
       amount: "150 CHZ",
       odds: "3.0x",
-      result: "Perdida",
+      result: "Lost",
       profit: "-150 CHZ",
       date: "14 Jun 2026",
       status: "lost"
     },
     {
       id: 3,
-      match: "Francia vs Alemania",
-      prediction: "Francia gana",
+      match: "France vs Germany",
+      prediction: "France wins",
       amount: "200 CHZ",
       odds: "2.6x",
       result: "Ganada",
@@ -69,11 +69,11 @@ const Perfil = () => {
     },
     {
       id: 4,
-      match: "Inglaterra vs Italia",
-      prediction: "Más de 2.5 goles",
+      match: "England vs Italy",
+      prediction: "Over 2.5 goals",
       amount: "75 CHZ",
       odds: "1.9x",
-      result: "Pendiente",
+      result: "Pending",
       profit: "--",
       date: "16 Jun 2026",
       status: "pending"
@@ -85,11 +85,11 @@ const Perfil = () => {
     { rank: 2, name: "Predictor Elite", country: "🇦🇷", winRate: 86, earnings: "38,900 CHZ" },
     { rank: 3, name: "Football Oracle", country: "🇪🇸", winRate: 84, earnings: "35,100 CHZ" },
     { rank: 4, name: "Goal Prophet", country: "🇫🇷", winRate: 82, earnings: "32,800 CHZ" },
-    { rank: 42, name: "Predictor Pro (Tú)", country: "🇲🇽", winRate: 57, earnings: "12,500 CHZ", isCurrentUser: true }
+    { rank: 42, name: "Predictor Pro (You)", country: "🇲🇽", winRate: 57, earnings: "12,500 CHZ", isCurrentUser: true }
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 md:pb-0">
       <Navbar />
       
       <div className="pt-20 pb-10 px-4">
@@ -112,7 +112,7 @@ const Perfil = () => {
                   <div className="flex items-center space-x-4 mt-4">
                     <Badge className="bg-secondary text-secondary-foreground">
                       <Star className="h-4 w-4 mr-1" />
-                      Nivel {userStats.level}
+                      Level {userStats.level}
                     </Badge>
                     <Badge variant="outline">
                       <Trophy className="h-4 w-4 mr-1" />
@@ -125,7 +125,7 @@ const Perfil = () => {
               <div className="flex-1 space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-2">
-                    <span>Experiencia</span>
+                    <span>Experience</span>
                     <span>{userStats.experience} / {userStats.nextLevelExp} XP</span>
                   </div>
                   <Progress value={(userStats.experience / userStats.nextLevelExp) * 100} className="h-3" />
@@ -134,19 +134,19 @@ const Perfil = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                   <div>
                     <p className="text-2xl font-bold text-primary">{userStats.winRate}%</p>
-                    <p className="text-sm text-muted-foreground">Tasa de Acierto</p>
+                    <p className="text-sm text-muted-foreground">Win Rate</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-secondary">{userStats.totalBets}</p>
-                    <p className="text-sm text-muted-foreground">Predicciones</p>
+                    <p className="text-sm text-muted-foreground">Predictions</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-accent">{userStats.totalEarnings}</p>
-                    <p className="text-sm text-muted-foreground">Ganancias Total</p>
+                    <p className="text-sm text-muted-foreground">Total Earnings</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{userStats.currentBalance}</p>
-                    <p className="text-sm text-muted-foreground">Balance Actual</p>
+                    <p className="text-sm text-muted-foreground">Current Balance</p>
                   </div>
                 </div>
               </div>
@@ -158,11 +158,11 @@ const Perfil = () => {
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="estadisticas" className="flex items-center space-x-2">
                 <TrendingUp className="h-4 w-4" />
-                <span>Estadísticas</span>
+                <span>Statistics</span>
               </TabsTrigger>
               <TabsTrigger value="historial" className="flex items-center space-x-2">
                 <Calendar className="h-4 w-4" />
-                <span>Historial</span>
+                <span>History</span>
               </TabsTrigger>
               <TabsTrigger value="ranking" className="flex items-center space-x-2">
                 <Medal className="h-4 w-4" />
@@ -170,7 +170,7 @@ const Perfil = () => {
               </TabsTrigger>
               <TabsTrigger value="logros" className="flex items-center space-x-2">
                 <Award className="h-4 w-4" />
-                <span>Logros</span>
+                <span>Achievements</span>
               </TabsTrigger>
             </TabsList>
 
@@ -179,7 +179,7 @@ const Perfil = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Resumen de Apuestas</h3>
+                    <h3 className="font-semibold">Betting Summary</h3>
                     <Target className="h-5 w-5 text-primary" />
                   </div>
                   <div className="space-y-3">
@@ -188,11 +188,11 @@ const Perfil = () => {
                       <span className="font-semibold">{userStats.totalBets}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Ganadas:</span>
+                      <span className="text-muted-foreground">Won:</span>
                       <span className="font-semibold text-primary">{userStats.wonBets}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Perdidas:</span>
+                      <span className="text-muted-foreground">Lost:</span>
                       <span className="font-semibold text-destructive">{userStats.totalBets - userStats.wonBets}</span>
                     </div>
                   </div>
@@ -200,16 +200,16 @@ const Perfil = () => {
 
                 <Card className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Rendimiento</h3>
+                    <h3 className="font-semibold">Performance</h3>
                     <TrendingUp className="h-5 w-5 text-secondary" />
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Racha actual:</span>
+                      <span className="text-muted-foreground">Current streak:</span>
                       <span className="font-semibold text-primary">+3</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Mejor racha:</span>
+                      <span className="text-muted-foreground">Best streak:</span>
                       <span className="font-semibold">+12</span>
                     </div>
                     <div className="flex justify-between">
@@ -221,7 +221,7 @@ const Perfil = () => {
 
                 <Card className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold">Posición</h3>
+                    <h3 className="font-semibold">Position</h3>
                     <Trophy className="h-5 w-5 text-secondary" />
                   </div>
                   <div className="space-y-3">
@@ -230,12 +230,12 @@ const Perfil = () => {
                       <span className="font-semibold">#{userStats.globalRank}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">País:</span>
+                      <span className="text-muted-foreground">Country:</span>
                       <span className="font-semibold">#{userStats.countryRank}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Liga:</span>
-                      <span className="font-semibold text-secondary">Oro</span>
+                      <span className="text-muted-foreground">League:</span>
+                      <span className="font-semibold text-secondary">Gold</span>
                     </div>
                   </div>
                 </Card>
@@ -245,18 +245,18 @@ const Perfil = () => {
             {/* Bet History */}
             <TabsContent value="historial" className="space-y-6">
               <Card className="p-6">
-                <h3 className="text-xl font-bold mb-6">Historial de Apuestas</h3>
+                <h3 className="text-xl font-bold mb-6">Betting History</h3>
                 
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Partido</TableHead>
-                      <TableHead>Predicción</TableHead>
-                      <TableHead>Monto</TableHead>
-                      <TableHead>Cuota</TableHead>
-                      <TableHead>Resultado</TableHead>
-                      <TableHead>Ganancia</TableHead>
-                      <TableHead>Fecha</TableHead>
+                      <TableHead>Match</TableHead>
+                      <TableHead>Prediction</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Odds</TableHead>
+                      <TableHead>Result</TableHead>
+                      <TableHead>Profit</TableHead>
+                      <TableHead>Date</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -289,7 +289,7 @@ const Perfil = () => {
                 </Table>
                 
                 <div className="text-center mt-6">
-                  <Button variant="outline">Cargar Más</Button>
+                  <Button variant="outline">Load More</Button>
                 </div>
               </Card>
             </TabsContent>
@@ -299,7 +299,7 @@ const Perfil = () => {
               <Card className="p-6">
                 <h3 className="text-xl font-bold mb-6 flex items-center">
                   <Medal className="h-6 w-6 mr-2 text-secondary" />
-                  Ranking Mundial
+                  World Ranking
                 </h3>
                 
                 <Table>
@@ -308,8 +308,8 @@ const Perfil = () => {
                       <TableHead className="w-16">#</TableHead>
                       <TableHead>Usuario</TableHead>
                       <TableHead>País</TableHead>
-                      <TableHead className="text-center">% Acierto</TableHead>
-                      <TableHead className="text-right">Ganancias</TableHead>
+                      <TableHead className="text-center">Win Rate</TableHead>
+                      <TableHead className="text-right">Earnings</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -328,7 +328,7 @@ const Perfil = () => {
                         </TableCell>
                         <TableCell className="font-medium">
                           {user.name}
-                          {user.isCurrentUser && <span className="ml-2 text-primary">(Tú)</span>}
+                          {user.isCurrentUser && <span className="ml-2 text-primary">(You)</span>}
                         </TableCell>
                         <TableCell>
                           <span className="text-2xl">{user.country}</span>
@@ -356,18 +356,18 @@ const Perfil = () => {
                 {/* Locked Achievements */}
                 <Card className="p-6 text-center opacity-50 border-dashed">
                   <div className="text-6xl mb-4">🔒</div>
-                  <h3 className="text-lg font-bold mb-2">Millonario CHZ</h3>
-                  <p className="text-sm text-muted-foreground">Gana 1,000,000 CHZ en total</p>
+                  <h3 className="text-lg font-bold mb-2">CHZ Millionaire</h3>
+                  <p className="text-sm text-muted-foreground">Earn 1,000,000 CHZ in total</p>
                   <Progress value={12.5} className="mt-4" />
                   <p className="text-xs text-muted-foreground mt-2">125,000 / 1,000,000 CHZ</p>
                 </Card>
                 
                 <Card className="p-6 text-center opacity-50 border-dashed">
                   <div className="text-6xl mb-4">🔒</div>
-                  <h3 className="text-lg font-bold mb-2">Centenario</h3>
-                  <p className="text-sm text-muted-foreground">Gana 100 predicciones consecutivas</p>
+                  <h3 className="text-lg font-bold mb-2">Centurion</h3>
+                  <p className="text-sm text-muted-foreground">Win 100 consecutive predictions</p>
                   <Progress value={3} className="mt-4" />
-                  <p className="text-xs text-muted-foreground mt-2">3 / 100 consecutivas</p>
+                  <p className="text-xs text-muted-foreground mt-2">3 / 100 consecutive</p>
                 </Card>
               </div>
             </TabsContent>

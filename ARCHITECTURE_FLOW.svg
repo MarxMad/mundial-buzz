@@ -1,0 +1,189 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font-family: Arial, sans-serif; font-size: 24px; font-weight: bold; fill: #1a1a1a; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #333; }
+      .text { font-family: Arial, sans-serif; font-size: 12px; fill: #555; }
+      .small-text { font-family: Arial, sans-serif; font-size: 10px; fill: #666; }
+      .box { fill: #f8f9fa; stroke: #dee2e6; stroke-width: 2; rx: 8; }
+      .chainlink-box { fill: #375bd2; stroke: #2a4bc7; stroke-width: 2; rx: 8; }
+      .chiliz-box { fill: #cc0000; stroke: #b30000; stroke-width: 2; rx: 8; }
+      .frontend-box { fill: #28a745; stroke: #1e7e34; stroke-width: 2; rx: 8; }
+      .data-box { fill: #ffc107; stroke: #e0a800; stroke-width: 2; rx: 8; }
+      .arrow { stroke: #495057; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .chainlink-arrow { stroke: #375bd2; stroke-width: 3; fill: none; marker-end: url(#chainlink-arrowhead); }
+      .chiliz-arrow { stroke: #cc0000; stroke-width: 3; fill: none; marker-end: url(#chiliz-arrowhead); }
+      .white-text { fill: white; font-weight: bold; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057" />
+    </marker>
+    <marker id="chainlink-arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#375bd2" />
+    </marker>
+    <marker id="chiliz-arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#cc0000" />
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="600" y="30" text-anchor="middle" class="title">Mundial Buzz - Flujo de Datos y Arquitectura</text>
+  <text x="600" y="55" text-anchor="middle" class="subtitle">Integración Chainlink CCIP + Chiliz Chain + Frontend</text>
+  
+  <!-- Data Sources Layer -->
+  <text x="100" y="100" class="subtitle">1. Fuentes de Datos</text>
+  
+  <!-- Sports APIs -->
+  <rect x="50" y="120" width="120" height="60" class="data-box"/>
+  <text x="110" y="140" text-anchor="middle" class="text white-text">APIs Deportivas</text>
+  <text x="110" y="155" text-anchor="middle" class="small-text white-text">Resultados FIFA</text>
+  <text x="110" y="170" text-anchor="middle" class="small-text white-text">Estadísticas</text>
+  
+  <!-- Chainlink VRF -->
+  <rect x="200" y="120" width="120" height="60" class="chainlink-box"/>
+  <text x="260" y="140" text-anchor="middle" class="text white-text">Chainlink VRF</text>
+  <text x="260" y="155" text-anchor="middle" class="small-text white-text">Resultados</text>
+  <text x="260" y="170" text-anchor="middle" class="small-text white-text">Verificables</text>
+  
+  <!-- Price Feeds -->
+  <rect x="350" y="120" width="120" height="60" class="chainlink-box"/>
+  <text x="410" y="140" text-anchor="middle" class="text white-text">Price Feeds</text>
+  <text x="410" y="155" text-anchor="middle" class="small-text white-text">CHZ/USD</text>
+  <text x="410" y="170" text-anchor="middle" class="small-text white-text">Tiempo Real</text>
+  
+  <!-- Smart Contracts Layer -->
+  <text x="100" y="250" class="subtitle">2. Smart Contracts (Chiliz Spicy Testnet)</text>
+  
+  <!-- PredictionMarket -->
+  <rect x="50" y="270" width="150" height="80" class="chiliz-box"/>
+  <text x="125" y="290" text-anchor="middle" class="text white-text">PredictionMarketCCIP</text>
+  <text x="125" y="305" text-anchor="middle" class="small-text white-text">• Mercados de predicción</text>
+  <text x="125" y="320" text-anchor="middle" class="small-text white-text">• Auto-resolución VRF</text>
+  <text x="125" y="335" text-anchor="middle" class="small-text white-text">• Rewards cross-chain</text>
+  
+  <!-- VotingSystem -->
+  <rect x="220" y="270" width="150" height="80" class="chiliz-box"/>
+  <text x="295" y="290" text-anchor="middle" class="text white-text">VotingSystemCCIP</text>
+  <text x="295" y="305" text-anchor="middle" class="small-text white-text">• Votación de fans</text>
+  <text x="295" y="320" text-anchor="middle" class="small-text white-text">• Cross-chain voting</text>
+  <text x="295" y="335" text-anchor="middle" class="small-text white-text">• Agregación CCIP</text>
+  
+  <!-- StakingPool -->
+  <rect x="390" y="270" width="150" height="80" class="chiliz-box"/>
+  <text x="465" y="290" text-anchor="middle" class="text white-text">StakingPool</text>
+  <text x="465" y="305" text-anchor="middle" class="small-text white-text">• Stake CHZ tokens</text>
+  <text x="465" y="320" text-anchor="middle" class="small-text white-text">• Yield farming</text>
+  <text x="465" y="335" text-anchor="middle" class="small-text white-text">• Rewards distribution</text>
+  
+  <!-- CCIP Layer -->
+  <text x="650" y="250" class="subtitle">3. Cross-Chain Infrastructure</text>
+  
+  <!-- CCIP Router -->
+  <rect x="600" y="270" width="200" height="80" class="chainlink-box"/>
+  <text x="700" y="290" text-anchor="middle" class="text white-text">Chainlink CCIP Router</text>
+  <text x="700" y="305" text-anchor="middle" class="small-text white-text">• Cross-chain messaging</text>
+  <text x="700" y="320" text-anchor="middle" class="small-text white-text">• Token transfers CHZ</text>
+  <text x="700" y="335" text-anchor="middle" class="small-text white-text">• Multi-chain rewards</text>
+  
+  <!-- Other Chains -->
+  <rect x="850" y="270" width="120" height="80" class="box"/>
+  <text x="910" y="290" text-anchor="middle" class="text">Otras Chains</text>
+  <text x="910" y="305" text-anchor="middle" class="small-text">• Ethereum</text>
+  <text x="910" y="320" text-anchor="middle" class="small-text">• Polygon</text>
+  <text x="910" y="335" text-anchor="middle" class="small-text">• Arbitrum</text>
+  
+  <!-- Frontend Layer -->
+  <text x="100" y="420" class="subtitle">4. Frontend (React + Vite)</text>
+  
+  <!-- Web App -->
+  <rect x="50" y="440" width="200" height="100" class="frontend-box"/>
+  <text x="150" y="465" text-anchor="middle" class="text white-text">Mundial Buzz Web App</text>
+  <text x="150" y="480" text-anchor="middle" class="small-text white-text">• React + TypeScript</text>
+  <text x="150" y="495" text-anchor="middle" class="small-text white-text">• Wagmi + Viem</text>
+  <text x="150" y="510" text-anchor="middle" class="small-text white-text">• Tailwind CSS</text>
+  <text x="150" y="525" text-anchor="middle" class="small-text white-text">• Responsive Design</text>
+  
+  <!-- Wallet Integration -->
+  <rect x="280" y="440" width="150" height="100" class="frontend-box"/>
+  <text x="355" y="465" text-anchor="middle" class="text white-text">Wallet Integration</text>
+  <text x="355" y="480" text-anchor="middle" class="small-text white-text">• MetaMask</text>
+  <text x="355" y="495" text-anchor="middle" class="small-text white-text">• WalletConnect</text>
+  <text x="355" y="510" text-anchor="middle" class="small-text white-text">• Chiliz Chain</text>
+  <text x="355" y="525" text-anchor="middle" class="small-text white-text">• CHZ Native</text>
+  
+  <!-- User Features -->
+  <rect x="460" y="440" width="200" height="100" class="frontend-box"/>
+  <text x="560" y="465" text-anchor="middle" class="text white-text">Características de Usuario</text>
+  <text x="560" y="480" text-anchor="middle" class="small-text white-text">• Mercados de predicción</text>
+  <text x="560" y="495" text-anchor="middle" class="small-text white-text">• Votación de fans</text>
+  <text x="560" y="510" text-anchor="middle" class="small-text white-text">• Staking y rewards</text>
+  <text x="560" y="525" text-anchor="middle" class="small-text white-text">• Dashboard personalizado</text>
+  
+  <!-- Data Flow Arrows -->
+  
+  <!-- From Data Sources to Smart Contracts -->
+  <line x1="110" y1="180" x2="125" y2="270" class="arrow"/>
+  <line x1="260" y1="180" x2="295" y2="270" class="chainlink-arrow"/>
+  <line x1="410" y1="180" x2="465" y2="270" class="chainlink-arrow"/>
+  
+  <!-- From Smart Contracts to CCIP -->
+  <line x1="200" y1="310" x2="600" y2="310" class="chiliz-arrow"/>
+  <line x1="370" y1="310" x2="600" y2="310" class="chiliz-arrow"/>
+  <line x1="540" y1="310" x2="600" y2="310" class="chiliz-arrow"/>
+  
+  <!-- From CCIP to Other Chains -->
+  <line x1="800" y1="310" x2="850" y2="310" class="chainlink-arrow"/>
+  
+  <!-- From Smart Contracts to Frontend -->
+  <line x1="125" y1="350" x2="150" y2="440" class="chiliz-arrow"/>
+  <line x1="295" y1="350" x2="355" y2="440" class="chiliz-arrow"/>
+  <line x1="465" y1="350" x2="560" y2="440" class="chiliz-arrow"/>
+  
+  <!-- User Interaction Flow -->
+  <text x="100" y="600" class="subtitle">5. Flujo de Interacción del Usuario</text>
+  
+  <!-- User Journey Steps -->
+  <rect x="50" y="620" width="100" height="60" class="box"/>
+  <text x="100" y="640" text-anchor="middle" class="small-text">1. Usuario</text>
+  <text x="100" y="655" text-anchor="middle" class="small-text">conecta wallet</text>
+  <text x="100" y="670" text-anchor="middle" class="small-text">a Chiliz Chain</text>
+  
+  <rect x="180" y="620" width="100" height="60" class="box"/>
+  <text x="230" y="640" text-anchor="middle" class="small-text">2. Crea/Participa</text>
+  <text x="230" y="655" text-anchor="middle" class="small-text">en mercados</text>
+  <text x="230" y="670" text-anchor="middle" class="small-text">de predicción</text>
+  
+  <rect x="310" y="620" width="100" height="60" class="box"/>
+  <text x="360" y="640" text-anchor="middle" class="small-text">3. VRF genera</text>
+  <text x="360" y="655" text-anchor="middle" class="small-text">resultados</text>
+  <text x="360" y="670" text-anchor="middle" class="small-text">verificables</text>
+  
+  <rect x="440" y="620" width="100" height="60" class="box"/>
+  <text x="490" y="640" text-anchor="middle" class="small-text">4. CCIP distribuye</text>
+  <text x="490" y="655" text-anchor="middle" class="small-text">rewards</text>
+  <text x="490" y="670" text-anchor="middle" class="small-text">cross-chain</text>
+  
+  <rect x="570" y="620" width="100" height="60" class="box"/>
+  <text x="620" y="640" text-anchor="middle" class="small-text">5. Usuario recibe</text>
+  <text x="620" y="655" text-anchor="middle" class="small-text">CHZ tokens</text>
+  <text x="620" y="670" text-anchor="middle" class="small-text">automáticamente</text>
+  
+  <!-- User Journey Arrows -->
+  <line x1="150" y1="650" x2="180" y2="650" class="arrow"/>
+  <line x1="280" y1="650" x2="310" y2="650" class="arrow"/>
+  <line x1="410" y1="650" x2="440" y2="650" class="arrow"/>
+  <line x1="540" y1="650" x2="570" y2="650" class="arrow"/>
+  
+  <!-- Key Benefits -->
+  <text x="750" y="600" class="subtitle">Beneficios Clave</text>
+  
+  <rect x="700" y="620" width="200" height="120" class="box"/>
+  <text x="800" y="640" text-anchor="middle" class="text">✅ Interoperabilidad Cross-Chain</text>
+  <text x="800" y="660" text-anchor="middle" class="text">✅ Resultados Verificables</text>
+  <text x="800" y="680" text-anchor="middle" class="text">✅ Rewards Automáticos</text>
+  <text x="800" y="700" text-anchor="middle" class="text">✅ Fan Engagement</text>
+  <text x="800" y="720" text-anchor="middle" class="text">✅ DeFi + Sports</text>
+  
+  <!-- Footer -->
+  <text x="600" y="770" text-anchor="middle" class="small-text">Mundial Buzz - Hackathon ETH NYC 2024 | Chainlink CCIP + Chiliz Chain Integration</text>
+</svg>

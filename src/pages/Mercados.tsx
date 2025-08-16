@@ -19,31 +19,31 @@ const Mercados = () => {
   const activeMarkets = [
     {
       id: 1,
-      title: "México vs Argentina - Resultado Final",
-      description: "¿Quién ganará el partido México vs Argentina?",
+      title: "Mexico vs Argentina - Final Result",
+      description: "Who will win the Mexico vs Argentina match?",
       creator: "Predictor Pro",
       timeLeft: "2h 30m",
       totalPool: "2,500 CHZ",
       participants: 156,
       options: [
-        { name: "México gana", votes: 45, percentage: 45 },
-        { name: "Empate", votes: 25, percentage: 25 },
-        { name: "Argentina gana", votes: 86, percentage: 55 }
+        { name: "Mexico wins", votes: 45, percentage: 45 },
+        { name: "Draw", votes: 25, percentage: 25 },
+        { name: "Argentina wins", votes: 86, percentage: 55 }
       ],
       status: "voting"
     },
     {
       id: 2,
-      title: "Brasil vs España - Marcador Exacto",
-      description: "Predice el marcador exacto del partido Brasil vs España",
+      title: "Brazil vs Spain - Exact Score",
+      description: "Predict the exact score of the Brazil vs Spain match",
       creator: "Futbol Genius",
       timeLeft: "5h 15m",
       totalPool: "1,800 CHZ",
       participants: 89,
       options: [
-        { name: "2-1 Brasil", votes: 34, percentage: 38 },
-        { name: "1-1 Empate", votes: 28, percentage: 31 },
-        { name: "1-2 España", votes: 27, percentage: 31 }
+        { name: "2-1 Brazil", votes: 34, percentage: 38 },
+        { name: "1-1 Draw", votes: 28, percentage: 31 },
+        { name: "1-2 Spain", votes: 27, percentage: 31 }
       ],
       status: "voting"
     }
@@ -52,15 +52,15 @@ const Mercados = () => {
   const proposedMarkets = [
     {
       id: 3,
-      title: "Francia vs Alemania - Primer Gol",
-      description: "¿Qué equipo anotará el primer gol del partido?",
+      title: "France vs Germany - First Goal",
+      description: "Which team will score the first goal of the match?",
       creator: "Mundial Expert",
       timeLeft: "18h 45m",
       requiredVotes: 100,
       currentVotes: 67,
       options: [
-        { name: "Francia", votes: 42, percentage: 63 },
-        { name: "Alemania", votes: 25, percentage: 37 }
+        { name: "France", votes: 42, percentage: 63 },
+        { name: "Germany", votes: 25, percentage: 37 }
       ],
       status: "proposal"
     }
@@ -69,18 +69,18 @@ const Mercados = () => {
   const myProposals = [
     {
       id: 4,
-      title: "Inglaterra vs Italia - Total de Goles",
-      description: "¿Cuántos goles habrá en total en el partido?",
+      title: "England vs Italy - Total Goals",
+      description: "How many goals will there be in total in the match?",
       timeLeft: "12h 20m",
       currentVotes: 23,
       requiredVotes: 100,
       status: "pending",
-      myVote: "Más de 2.5 goles"
+      myVote: "Over 2.5 goals"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 md:pb-0">
       <Navbar />
       
       <div className="pt-20 pb-10 px-4">
@@ -91,11 +91,11 @@ const Mercados = () => {
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold mb-4">
                   <span className="gradient-hero bg-clip-text text-transparent">
-                    Mercados de Predicciones
+                    Prediction Markets
                   </span>
                 </h1>
                 <p className="text-xl text-muted-foreground max-w-2xl">
-                  Crea y vota por predicciones deportivas. Las más votadas se publican en el dashboard.
+                  Create and vote for sports predictions. The most voted ones are published on the dashboard.
                 </p>
               </div>
               
@@ -103,65 +103,65 @@ const Mercados = () => {
                 <DialogTrigger asChild>
                   <Button className="btn-trophy mt-4 md:mt-0">
                     <PlusCircle className="mr-2 h-5 w-5" />
-                    Crear Mercado
+                    Create Market
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>Crear Nueva Predicción</DialogTitle>
+                    <DialogTitle>Create New Prediction</DialogTitle>
                   </DialogHeader>
                   
                   <div className="space-y-6">
                     <div>
-                      <Label htmlFor="match">Partido</Label>
+                      <Label htmlFor="match">Match</Label>
                       <Select>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un partido" />
+                          <SelectValue placeholder="Select a match" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="mex-arg">México vs Argentina</SelectItem>
-                          <SelectItem value="bra-esp">Brasil vs España</SelectItem>
-                          <SelectItem value="fra-ale">Francia vs Alemania</SelectItem>
+                          <SelectItem value="mex-arg">Mexico vs Argentina</SelectItem>
+                          <SelectItem value="bra-esp">Brazil vs Spain</SelectItem>
+                          <SelectItem value="fra-ale">France vs Germany</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     
                     <div>
-                      <Label htmlFor="title">Título de la Predicción</Label>
+                      <Label htmlFor="title">Prediction Title</Label>
                       <Input 
                         id="title"
-                        placeholder="Ej: ¿Quién anotará el primer gol?"
+                        placeholder="e.g: Who will score the first goal?"
                         className="mt-2"
                       />
                     </div>
                     
                     <div>
-                      <Label htmlFor="description">Descripción</Label>
+                      <Label htmlFor="description">Description</Label>
                       <Textarea 
                         id="description"
-                        placeholder="Describe tu predicción en detalle..."
+                        placeholder="Describe your prediction in detail..."
                         className="mt-2"
                         rows={3}
                       />
                     </div>
                     
                     <div>
-                      <Label>Opciones de Predicción</Label>
+                      <Label>Prediction Options</Label>
                       <div className="space-y-2 mt-2">
-                        <Input placeholder="Opción 1" />
-                        <Input placeholder="Opción 2" />
+                        <Input placeholder="Option 1" />
+                        <Input placeholder="Option 2" />
                         <Button variant="outline" size="sm" className="w-full">
-                          + Agregar Opción
+                          + Add Option
                         </Button>
                       </div>
                     </div>
                     
                     <div className="flex space-x-4">
                       <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-                        Cancelar
+                        Cancel
                       </Button>
                       <Button className="btn-hero flex-1">
-                        Crear Propuesta
+                        Create Proposal
                       </Button>
                     </div>
                   </div>
@@ -175,15 +175,15 @@ const Mercados = () => {
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="activos" className="flex items-center space-x-2">
                 <TrendingUp className="h-4 w-4" />
-                <span>Mercados Activos</span>
+                <span>Active Markets</span>
               </TabsTrigger>
               <TabsTrigger value="propuestas" className="flex items-center space-x-2">
                 <Vote className="h-4 w-4" />
-                <span>Propuestas</span>
+                <span>Proposals</span>
               </TabsTrigger>
               <TabsTrigger value="mis-propuestas" className="flex items-center space-x-2">
                 <Users className="h-4 w-4" />
-                <span>Mis Propuestas</span>
+                <span>My Proposals</span>
               </TabsTrigger>
             </TabsList>
 
@@ -199,21 +199,21 @@ const Mercados = () => {
                         <p className="text-xs text-muted-foreground">Por: {market.creator}</p>
                       </div>
                       <Badge className="bg-primary text-primary-foreground">
-                        Activo
+                        Active
                       </Badge>
                     </div>
                     
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div className="text-center">
-                        <p className="text-muted-foreground">Pool Total</p>
+                        <p className="text-muted-foreground">Total Pool</p>
                         <p className="font-bold text-secondary">{market.totalPool}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-muted-foreground">Participantes</p>
+                        <p className="text-muted-foreground">Participants</p>
                         <p className="font-bold">{market.participants}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-muted-foreground">Tiempo</p>
+                        <p className="text-muted-foreground">Time</p>
                         <p className="font-bold text-destructive">{market.timeLeft}</p>
                       </div>
                     </div>
@@ -223,7 +223,7 @@ const Mercados = () => {
                         <div key={index} className="space-y-2">
                           <div className="flex justify-between text-sm">
                             <span>{option.name}</span>
-                            <span className="font-semibold">{option.votes} votos ({option.percentage}%)</span>
+                            <span className="font-semibold">{option.votes} votes ({option.percentage}%)</span>
                           </div>
                           <Progress value={option.percentage} className="h-2" />
                         </div>
@@ -231,7 +231,7 @@ const Mercados = () => {
                     </div>
                     
                     <Button className="w-full btn-hero">
-                      Hacer Predicción
+                      Make Prediction
                     </Button>
                   </Card>
                 ))}
@@ -244,7 +244,7 @@ const Mercados = () => {
                 <div className="flex items-center space-x-2 text-secondary">
                   <AlertCircle className="h-5 w-5" />
                   <p className="text-sm font-medium">
-                    Las propuestas necesitan 100 votos y mayoría calificada (60%+) para activarse
+                    Proposals need 100 votes and qualified majority (60%+) to be activated
                   </p>
                 </div>
               </Card>
@@ -259,17 +259,17 @@ const Mercados = () => {
                         <p className="text-xs text-muted-foreground">Por: {market.creator}</p>
                       </div>
                       <Badge variant="outline" className="border-secondary text-secondary">
-                        Propuesta
+                        Proposal
                       </Badge>
                     </div>
                     
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>Progreso de Votación</span>
-                        <span className="font-semibold">{market.currentVotes}/{market.requiredVotes} votos</span>
+                        <span>Voting Progress</span>
+                        <span className="font-semibold">{market.currentVotes}/{market.requiredVotes} votes</span>
                       </div>
                       <Progress value={(market.currentVotes / market.requiredVotes) * 100} className="h-2" />
-                      <p className="text-xs text-muted-foreground">Tiempo restante: {market.timeLeft}</p>
+                      <p className="text-xs text-muted-foreground">Time remaining: {market.timeLeft}</p>
                     </div>
                     
                     <div className="space-y-3">
@@ -307,30 +307,30 @@ const Mercados = () => {
                           <p className="text-sm text-muted-foreground mb-4">{market.description}</p>
                         </div>
                         <Badge variant="outline" className="border-muted">
-                          Pendiente
+                          Pending
                         </Badge>
                       </div>
                       
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span>Progreso</span>
-                          <span className="font-semibold">{market.currentVotes}/{market.requiredVotes} votos</span>
+                          <span>Progress</span>
+                          <span className="font-semibold">{market.currentVotes}/{market.requiredVotes} votes</span>
                         </div>
                         <Progress value={(market.currentVotes / market.requiredVotes) * 100} className="h-2" />
-                        <p className="text-xs text-muted-foreground">Tiempo restante: {market.timeLeft}</p>
+                        <p className="text-xs text-muted-foreground">Time remaining: {market.timeLeft}</p>
                       </div>
                       
                       <div className="p-3 bg-muted rounded-lg">
-                        <p className="text-sm text-muted-foreground">Mi voto:</p>
+                        <p className="text-sm text-muted-foreground">My vote:</p>
                         <p className="font-semibold">{market.myVote}</p>
                       </div>
                       
                       <div className="flex space-x-2">
                         <Button variant="outline" size="sm" className="flex-1">
-                          Editar
+                          Edit
                         </Button>
                         <Button variant="outline" size="sm" className="flex-1">
-                          Compartir
+                          Share
                         </Button>
                       </div>
                     </Card>
@@ -339,13 +339,13 @@ const Mercados = () => {
               ) : (
                 <Card className="p-12 text-center">
                   <Vote className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-xl font-semibold mb-2">No tienes propuestas</h3>
+                  <h3 className="text-xl font-semibold mb-2">You have no proposals</h3>
                   <p className="text-muted-foreground mb-6">
-                    Crea tu primera propuesta de mercado para que otros usuarios puedan votarla
+                    Create your first market proposal so other users can vote on it
                   </p>
                   <Button className="btn-trophy" onClick={() => setIsCreateModalOpen(true)}>
                     <PlusCircle className="mr-2 h-5 w-5" />
-                    Crear Mi Primera Propuesta
+                    Create My First Proposal
                   </Button>
                 </Card>
               )}

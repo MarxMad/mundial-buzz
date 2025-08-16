@@ -8,25 +8,37 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Core Brand Colors */
-    --background: 222 84% 4.9%;
+    /* Professional Typography System */
+    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: 'Orbitron', 'Inter', sans-serif;
+    --font-sports: 'Rajdhani', 'Inter', sans-serif;
+    
+    /* Core Brand Colors - Professional Sports Theme */
+    --background: 220 26% 6%;
     --foreground: 210 40% 98%;
 
-    --card: 222 47% 11%;
+    --card: 220 20% 10%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 47% 11%;
+    --popover: 220 20% 10%;
     --popover-foreground: 210 40% 98%;
 
-    /* Football Field Green - Primary Brand */
-    --primary: 142 76% 36%;
+    /* Professional Sports Colors */
+    --primary: 24 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 142 76% 46%;
+    --primary-glow: 24 100% 60%;
 
-    /* Championship Gold - Secondary */
-    --secondary: 43 96% 56%;
-    --secondary-foreground: 222 84% 4.9%;
-    --secondary-glow: 43 96% 66%;
+    /* Championship Gold - Premium */
+    --secondary: 45 93% 58%;
+    --secondary-foreground: 220 26% 6%;
+    --secondary-glow: 45 93% 68%;
+
+    /* Sports Action Colors */
+    --sports-green: 142 71% 45%;
+    --sports-blue: 217 91% 60%;
+    --sports-red: 0 84% 60%;
+    --sports-orange: 24 100% 50%;
+    --sports-yellow: 45 93% 58%;
 
     /* Muted Tones */
     --muted: 217 32% 17%;
@@ -47,16 +59,23 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    /* Custom Gradients */
-    --gradient-field: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
-    --gradient-trophy: linear-gradient(135deg, hsl(43 96% 56%), hsl(43 96% 66%));
-    --gradient-stadium: linear-gradient(180deg, hsl(222 84% 4.9%), hsl(222 47% 11%));
-    --gradient-hero: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(43 96% 56%) 100%);
+    /* Professional Sports Gradients */
+    --gradient-field: linear-gradient(135deg, hsl(142 71% 45%), hsl(142 71% 55%));
+    --gradient-trophy: linear-gradient(135deg, hsl(45 93% 58%), hsl(45 93% 68%));
+    --gradient-stadium: linear-gradient(180deg, hsl(220 26% 6%), hsl(220 20% 10%));
+    --gradient-hero: linear-gradient(135deg, hsl(24 100% 65%) 0%, hsl(45 93% 70%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(220 20% 10%) 0%, hsl(220 15% 12%) 100%);
+    --gradient-action: linear-gradient(135deg, hsl(24 100% 50%) 0%, hsl(45 93% 58%) 100%);
+    --gradient-premium: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(142 71% 45%) 100%);
     
-    /* Custom Shadows */
-    --shadow-glow-green: 0 0 40px hsl(142 76% 36% / 0.3);
-    --shadow-glow-gold: 0 0 40px hsl(43 96% 56% / 0.3);
-    --shadow-card: 0 10px 30px -10px hsl(0 0% 0% / 0.3);
+    /* Professional Sports Shadows */
+    --shadow-glow-green: 0 0 40px hsl(142 71% 45% / 0.4);
+    --shadow-glow-gold: 0 0 40px hsl(45 93% 58% / 0.4);
+    --shadow-glow-orange: 0 0 40px hsl(24 100% 50% / 0.4);
+    --shadow-glow-blue: 0 0 40px hsl(217 91% 60% / 0.4);
+    --shadow-card: 0 15px 35px -5px hsl(0 0% 0% / 0.4);
+    --shadow-card-hover: 0 25px 50px -12px hsl(0 0% 0% / 0.6);
+    --shadow-premium: 0 20px 40px -10px hsl(24 100% 50% / 0.3);
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -129,6 +148,23 @@ All colors MUST be HSL.
 }
 
 @layer components {
+  /* Typography Classes */
+  .font-primary {
+    font-family: var(--font-primary);
+  }
+  
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  
+  .font-sports {
+    font-family: var(--font-sports);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  
   /* Custom Button Variants */
   .btn-hero {
     @apply bg-primary text-primary-foreground hover:bg-primary-glow;
@@ -197,4 +233,114 @@ All colors MUST be HSL.
   50% { transform: scale(1.05); }
   70% { transform: scale(0.9); }
   100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Dashboard Animation Classes */
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+.animate-slide-up-delay {
+  animation: slideUp 0.8s ease-out 0.2s both;
+}
+
+.animate-fade-in-delay {
+  animation: fadeIn 1s ease-out 0.4s both;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Professional Sports Utility Classes */
+.bg-sports-gradient {
+  background: var(--gradient-hero);
+}
+
+.bg-card-gradient {
+  background: var(--gradient-card);
+}
+
+.bg-action-gradient {
+  background: var(--gradient-action);
+}
+
+.bg-premium-gradient {
+  background: var(--gradient-premium);
+}
+
+.text-sports-orange {
+  color: hsl(var(--sports-orange));
+}
+
+.text-sports-blue {
+  color: hsl(var(--sports-blue));
+}
+
+.text-sports-green {
+  color: hsl(var(--sports-green));
+}
+
+.text-sports-yellow {
+  color: hsl(var(--sports-yellow));
+}
+
+.shadow-premium {
+  box-shadow: var(--shadow-premium);
+}
+
+.shadow-card-hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.glow-orange {
+  box-shadow: var(--shadow-glow-orange);
+}
+
+.glow-blue {
+  box-shadow: var(--shadow-glow-blue);
+}
+
+.border-sports-orange {
+  border-color: hsl(var(--sports-orange));
+}
+
+.border-sports-blue {
+  border-color: hsl(var(--sports-blue));
+}
+
+.border-sports-green {
+  border-color: hsl(var(--sports-green));
+}
+
+/* Professional Typography Classes */
+.font-primary {
+  font-family: var(--font-primary);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-sports {
+  font-family: var(--font-sports);
 }

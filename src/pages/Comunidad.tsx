@@ -24,11 +24,11 @@ const Comunidad = () => {
         avatar: "/placeholder-avatar.jpg",
         country: "🇲🇽"
       },
-      content: "¡Increíble ambiente en el Azteca! México vs Argentina, partido histórico. La energía de la afición es indescriptible 🔥⚽",
+      content: "Incredible atmosphere at the Azteca! Mexico vs Argentina, historic match. The energy of the fans is indescribable 🔥⚽",
       image: "/placeholder-stadium.jpg",
-      location: "Estadio Azteca, Ciudad de México",
-      match: "México vs Argentina",
-      timestamp: "hace 2h",
+      location: "Azteca Stadium, Mexico City",
+      match: "Mexico vs Argentina",
+      timestamp: "2h ago",
       likes: 245,
       comments: 18,
       shares: 12,
@@ -42,11 +42,11 @@ const Comunidad = () => {
         avatar: "/placeholder-avatar.jpg",
         country: "🇧🇷"
       },
-      content: "Pre-partido en el MetLife Stadium. Brasil viene con todo, pero España no se queda atrás. ¿Quién creen que gane? 🤔",
+      content: "Pre-match at MetLife Stadium. Brazil comes with everything, but Spain doesn't stay behind. Who do you think will win? 🤔",
       image: "/placeholder-stadium2.jpg",
-      location: "MetLife Stadium, Nueva Jersey",
-      match: "Brasil vs España",
-      timestamp: "hace 4h",
+      location: "MetLife Stadium, New Jersey",
+      match: "Brazil vs Spain",
+      timestamp: "4h ago",
       likes: 189,
       comments: 32,
       shares: 8,
@@ -60,11 +60,11 @@ const Comunidad = () => {
         avatar: "/placeholder-avatar.jpg",
         country: "🇦🇷"
       },
-      content: "La hinchada argentina se prepara para el partido más importante. Rosario en el alma, mundial en el corazón 💙🤍💙",
+      content: "The Argentine fans prepare for the most important match. Rosario in the soul, World Cup in the heart 💙🤍💙",
       image: "/placeholder-fans.jpg",
       location: "Buenos Aires, Argentina",
-      match: "Concentración Argentina",
-      timestamp: "hace 6h",
+      match: "Argentina Concentration",
+      timestamp: "6h ago",
       likes: 312,
       comments: 45,
       shares: 23,
@@ -74,23 +74,23 @@ const Comunidad = () => {
 
   const trendingEvents = [
     {
-      name: "México vs Argentina",
-      location: "Estadio Azteca",
+      name: "Mexico vs Argentina",
+      location: "Azteca Stadium",
       date: "15 Jun 2026",
       attendees: 1245,
       posts: 89
     },
     {
-      name: "Brasil vs España",
+      name: "Brazil vs Spain",
       location: "MetLife Stadium",
       date: "16 Jun 2026",
       attendees: 967,
       posts: 67
     },
     {
-      name: "Fan Fest Ciudad de México",
+      name: "Mexico City Fan Fest",
       location: "Zócalo CDMX",
-      date: "Todo el mes",
+      date: "All month",
       attendees: 2890,
       posts: 234
     }
@@ -104,7 +104,7 @@ const Comunidad = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 md:pb-0">
       <Navbar />
       
       <div className="pt-20 pb-10 px-4">
@@ -115,11 +115,11 @@ const Comunidad = () => {
               <div>
                 <h1 className="text-4xl md:text-5xl font-bold mb-4">
                   <span className="gradient-hero bg-clip-text text-transparent">
-                    Comunidad Mundial
+                    World Community
                   </span>
                 </h1>
                 <p className="text-xl text-muted-foreground max-w-2xl">
-                  Comparte tus experiencias en los partidos y conecta con otros fanáticos del fútbol
+                  Share your match experiences and connect with other football fans
                 </p>
               </div>
               
@@ -127,31 +127,31 @@ const Comunidad = () => {
                 <DialogTrigger asChild>
                   <Button className="btn-trophy mt-4 md:mt-0">
                     <Camera className="mr-2 h-5 w-5" />
-                    Subir Foto
+                    Upload Photo
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>Compartir Experiencia</DialogTitle>
+                    <DialogTitle>Share Experience</DialogTitle>
                   </DialogHeader>
                   
                   <div className="space-y-6">
                     <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
                       <ImagePlus className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-lg font-medium mb-2">Sube una foto del partido</p>
+                      <p className="text-lg font-medium mb-2">Upload a match photo</p>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Comparte el ambiente del estadio con la comunidad
+                        Share the stadium atmosphere with the community
                       </p>
                       <Button variant="outline">
-                        Seleccionar Imagen
+                        Select Image
                       </Button>
                     </div>
                     
                     <div>
-                      <Label htmlFor="caption">Descripción</Label>
+                      <Label htmlFor="caption">Description</Label>
                       <Textarea 
                         id="caption"
-                        placeholder="Cuéntanos sobre tu experiencia en el partido..."
+                        placeholder="Tell us about your match experience..."
                         className="mt-2"
                         rows={3}
                       />
@@ -159,18 +159,18 @@ const Comunidad = () => {
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="match">Partido</Label>
+                        <Label htmlFor="match">Match</Label>
                         <Input 
                           id="match"
-                          placeholder="Ej: México vs Argentina"
+                          placeholder="e.g: Mexico vs Argentina"
                           className="mt-2"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="location">Ubicación</Label>
+                        <Label htmlFor="location">Location</Label>
                         <Input 
                           id="location"
-                          placeholder="Ej: Estadio Azteca"
+                          placeholder="e.g: Azteca Stadium"
                           className="mt-2"
                         />
                       </div>
@@ -178,11 +178,11 @@ const Comunidad = () => {
                     
                     <div className="flex space-x-4">
                       <Button variant="outline" onClick={() => setIsPostModalOpen(false)}>
-                        Cancelar
+                        Cancel
                       </Button>
                       <Button className="btn-hero flex-1">
                         <Send className="mr-2 h-4 w-4" />
-                        Publicar
+                        Post
                       </Button>
                     </div>
                   </div>
@@ -198,11 +198,11 @@ const Comunidad = () => {
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="feed" className="flex items-center space-x-2">
                     <Users className="h-4 w-4" />
-                    <span>Feed Principal</span>
+                    <span>Main Feed</span>
                   </TabsTrigger>
                   <TabsTrigger value="eventos" className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4" />
-                    <span>Eventos</span>
+                    <span>Events</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -284,7 +284,7 @@ const Comunidad = () => {
                   
                   <div className="text-center">
                     <Button variant="outline" size="lg">
-                      Cargar Más Publicaciones
+                      Load More Posts
                     </Button>
                   </div>
                 </TabsContent>
@@ -316,7 +316,7 @@ const Comunidad = () => {
                         
                         <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
                           <div className="text-center">
-                            <p className="text-muted-foreground">Asistentes</p>
+                            <p className="text-muted-foreground">Attendees</p>
                             <p className="font-bold text-primary">{event.attendees.toLocaleString()}</p>
                           </div>
                           <div className="text-center">
@@ -326,7 +326,7 @@ const Comunidad = () => {
                         </div>
                         
                         <Button className="w-full btn-hero">
-                          Ver Evento
+                          View Event
                         </Button>
                       </Card>
                     ))}
@@ -341,7 +341,7 @@ const Comunidad = () => {
               <Card className="p-6">
                 <h3 className="text-lg font-bold mb-4 flex items-center">
                   <Users className="h-5 w-5 mr-2 text-primary" />
-                  Top Contribuidores
+                  Top Contributors
                 </h3>
                 
                 <div className="space-y-4">
@@ -362,7 +362,7 @@ const Comunidad = () => {
                           <span className="text-lg">{user.country}</span>
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {user.posts} posts • {user.followers} seguidores
+                          {user.posts} posts • {user.followers} followers
                         </div>
                       </div>
                     </div>
@@ -370,25 +370,25 @@ const Comunidad = () => {
                 </div>
                 
                 <Button variant="outline" size="sm" className="w-full mt-4">
-                  Ver Ranking Completo
+                  View Full Ranking
                 </Button>
               </Card>
 
               {/* Quick Stats */}
               <Card className="p-6">
-                <h3 className="text-lg font-bold mb-4">Estadísticas de Hoy</h3>
+                <h3 className="text-lg font-bold mb-4">Today's Statistics</h3>
                 
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Nuevas fotos:</span>
+                    <span className="text-muted-foreground">New photos:</span>
                     <span className="font-semibold">234</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Usuarios activos:</span>
+                    <span className="text-muted-foreground">Active users:</span>
                     <span className="font-semibold">1,567</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Eventos en vivo:</span>
+                    <span className="text-muted-foreground">Live events:</span>
                     <span className="font-semibold text-primary">12</span>
                   </div>
                   <div className="flex justify-between">
