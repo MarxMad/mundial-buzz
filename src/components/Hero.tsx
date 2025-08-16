@@ -1,8 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Wallet, Eye, Trophy } from "lucide-react";
+import { Eye, Trophy, AlertCircle } from "lucide-react";
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core';
+import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
 import heroStadium from "@/assets/hero-stadium.jpg";
 
 const Hero = () => {
+  const { user } = useDynamicContext();
+  const isConnected = !!user;
+
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -35,15 +40,34 @@ const Hero = () => {
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-float">
-          <Button className="btn-hero px-8 py-6 text-lg">
-            <Wallet className="mr-2 h-5 w-5" />
-            Conectar Wallet
-          </Button>
-          
-          <Button variant="outline" className="px-8 py-6 text-lg border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground">
-            <Eye className="mr-2 h-5 w-5" />
-            Explorar como Invitado
-          </Button>
+          {!isConnected ? (
+             <>
+               <DynamicWidget />
+              
+              <Button variant="outline" className="px-8 py-6 text-lg border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground" asChild>
+                <a href="/partidos">
+                  <Eye className="mr-2 h-5 w-5" />
+                  Explorar como Invitado
+                </a>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button className="btn-hero px-8 py-6 text-lg" asChild>
+                <a href="/mercados">
+                  <Trophy className="mr-2 h-5 w-5" />
+                  Comenzar a Predecir
+                </a>
+              </Button>
+              
+              <Button variant="outline" className="px-8 py-6 text-lg border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground" asChild>
+                <a href="/perfil">
+                  <Eye className="mr-2 h-5 w-5" />
+                  Ver Mi Perfil
+                </a>
+              </Button>
+            </>
+          )}
         </div>
         
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
