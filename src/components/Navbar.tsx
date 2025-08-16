@@ -19,17 +19,17 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#dashboard" className="text-foreground hover:text-primary transition-colors">
+            <a href="/partidos" className="text-foreground hover:text-primary transition-colors">
               Partidos
             </a>
-            <a href="#markets" className="text-foreground hover:text-primary transition-colors">
+            <a href="/mercados" className="text-foreground hover:text-primary transition-colors">
               Mercados
             </a>
-            <a href="#profile" className="text-foreground hover:text-primary transition-colors">
+            <a href="/perfil" className="text-foreground hover:text-primary transition-colors">
               Mi Perfil
             </a>
-            <a href="#leaderboard" className="text-foreground hover:text-primary transition-colors">
-              Ranking
+            <a href="/comunidad" className="text-foreground hover:text-primary transition-colors">
+              Comunidad
             </a>
           </div>
 
@@ -60,17 +60,17 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-4 border-t border-border">
             <div className="flex flex-col space-y-4 pt-4">
-              <a href="#dashboard" className="text-foreground hover:text-primary transition-colors">
+              <a href="/partidos" className="text-foreground hover:text-primary transition-colors">
                 Partidos
               </a>
-              <a href="#markets" className="text-foreground hover:text-primary transition-colors">
+              <a href="/mercados" className="text-foreground hover:text-primary transition-colors">
                 Mercados
               </a>
-              <a href="#profile" className="text-foreground hover:text-primary transition-colors">
+              <a href="/perfil" className="text-foreground hover:text-primary transition-colors">
                 Mi Perfil
               </a>
-              <a href="#leaderboard" className="text-foreground hover:text-primary transition-colors">
-                Ranking
+              <a href="/comunidad" className="text-foreground hover:text-primary transition-colors">
+                Comunidad
               </a>
               <div className="flex flex-col space-y-2 pt-4 border-t border-border">
                 <Button variant="outline" size="sm">
