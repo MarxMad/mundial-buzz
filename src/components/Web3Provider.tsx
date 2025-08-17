@@ -1,22 +1,21 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider } from 'wagmi';
-import { ReactNode } from 'react'
-import { wagmiConfig } from '../lib/wagmi-config'
+import React from 'react'
+import { WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { config } from '../lib/wagmi-config'
 
-const queryClient = new QueryClient();
+// Crear cliente de query
+const queryClient = new QueryClient()
 
 interface Web3ProviderProps {
-  children: ReactNode
+  children: React.ReactNode
 }
 
-export const Web3Provider = ({ children }: Web3ProviderProps) => {
+export const Web3Provider: React.FC<Web3ProviderProps> = ({ children }) => {
   return (
-    <WagmiProvider config={wagmiConfig}>
+    <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         {children}
       </QueryClientProvider>
     </WagmiProvider>
   )
 }
-
-export default Web3Provider

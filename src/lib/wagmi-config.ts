@@ -1,66 +1,56 @@
 import { createConfig, http } from 'wagmi'
-import { chilizSpicy, chilizMainnet } from './chiliz-config'
-import { injected, metaMask, walletConnect, gemini } from 'wagmi/connectors'
+import { gemini } from 'wagmi/connectors'
+import { baseSepolia, chilizSpicy } from './chains'
 
-// WalletConnect project ID - you should get this from https://cloud.walletconnect.com
-const projectId = 'your-project-id' // Replace with actual project ID
+// Configuración de metadata para Gemini Wallet según la documentación oficial
+const geminiMetadata = {
+  name: 'Mundial Buzz',
+  url: 'https://mundial-buzz.vercel.app',
+  icon: 'https://mundial-buzz.vercel.app/logo.png'
+}
 
-// Gemini wallet connector (official)
-const geminiWallet = gemini({
-  appMetadata: {
-    name: 'MundialPredict',
-    url: 'https://mundialpredict.com',
-    icons: ['https://mundialpredict.com/favicon.ico'],
-  },
-})
-
-export const wagmiConfig = createConfig({
-  chains: [chilizSpicy, chilizMainnet],
+export const config = createConfig({
+  chains: [baseSepolia, chilizSpicy],
   connectors: [
-    injected(),
-    metaMask(),
-    geminiWallet,
-    walletConnect({ 
-      projectId,
-      metadata: {
-        name: 'MundialPredict',
-        description: 'Mercado de predicciones deportivas del Mundial FIFA 2026',
-        url: 'https://mundialpredict.com',
-        icons: ['https://mundialpredict.com/icon.png']
-      }
-    }),
+    // Gemini Wallet como conector principal según la documentación
+    gemini({
+      appMetadata: geminiMetadata
+    })
   ],
   transports: {
-    [chilizSpicy.id]: http(),
-    [chilizMainnet.id]: http(),
+    [baseSepolia.id]: http('https://sepolia.base.org'),
+    [chilizSpicy.id]: http('https://spicy-rpc.chiliz.com'),
   },
 })
 
-// Types for better TypeScript support
-export type ChainId = typeof chilizSpicy.id | typeof chilizMainnet.id
+// Exportar las cadenas para uso en otros componentes
+export { baseSepolia, chilizSpicy }
+
+// Types para mejor soporte de TypeScript
+export type ChainId = typeof baseSepolia.id | typeof chilizSpicy.id
 
 // Helper functions
 export const getChainName = (chainId: ChainId): string => {
   switch (chainId) {
+    case baseSepolia.id:
+      return 'Base Sepolia Testnet'
     case chilizSpicy.id:
       return 'Chiliz Spicy Testnet'
-    case chilizMainnet.id:
-      return 'Chiliz Chain'
     default:
-      return 'Unknown Chain'
+      return 'Unknown Network'
   }
 }
 
 export const isTestnet = (chainId: ChainId): boolean => {
-  return chainId === chilizSpicy.id
+  return chainId === baseSepolia.id
 }
 
 export const getExplorerUrl = (chainId: ChainId): string => {
   switch (chainId) {
+    case baseSepolia.id:
+      return 'https://sepolia.basescan.org'
     case chilizSpicy.id:
-      return 'https://testnet.chiliscan.com'
-    case chilizMainnet.id:
-      return 'https://chiliscan.com'
+      return 'https://spicy-explorer.chiliz.com'
     default:
       return ''
   }

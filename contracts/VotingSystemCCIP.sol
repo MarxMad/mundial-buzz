@@ -7,25 +7,46 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "./HyperlaneChilizBridge.sol";
 
 /**
+ * @title IPredictionMarket
+ * @dev Interfaz para interactuar con el PredictionMarketCCIP
+ */
+interface IPredictionMarket {
+    function getPredictionOptions(uint256 _matchId) external view returns (string[] memory);
+    function getMatch(uint256 _matchId) external view returns (
+        uint256 id,
+        string memory team1,
+        string memory team2,
+        string memory title,
+        string[] memory predictionOptions,
+        uint256 startTime,
+        uint256 endTime,
+        uint256 totalPool,
+        uint8 status,
+        uint256 winningOption,
+        bool autoResolve,
+        address creator,
+        uint256 creatorReward,
+        uint256 platformReward,
+        uint256 userRewardPool,
+        uint256 minStakeRequired
+    );
+}
+
+/**
  * @title VotingSystemCCIP
- * @dev Sistema de votación cross-chain usando Chainlink CCIP
- * Permite votaciones distribuidas entre múltiples chains
+ * @dev Sistema de votación cross-chain para partidos deportivos
+ * Se conecta con PredictionMarketCCIP para resolver partidos automáticamente
  */
 contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
     
-    struct Vote {
-        address voter;
-        uint256 amount;
-        uint256 option;
-        uint256 timestamp;
-        bool claimed;
-        uint64 sourceChain; // Chain donde se originó el voto
-    }
-
+    // Prediction Market Contract
+    address public predictionMarket;
+    
     struct VotingCategory {
+        uint256 matchId; // ID del partido en PredictionMarketCCIP
         string title;
         string description;
-        string[] options;
+        string[] options; // Opciones de predicción del partido
         uint256 startTime;
         uint256 endTime;
         uint256 totalVotes;
@@ -35,9 +56,21 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
         bool active;
         uint256 minVoteAmount;
         uint256 rewardPool;
-        bool crossChainEnabled; // Si permite votos cross-chain
-        mapping(uint64 => uint256) chainVotes; // Votos por chain
-        mapping(uint64 => uint256) chainAmounts; // Amounts por chain
+        bool crossChainEnabled;
+        mapping(uint64 => uint256) chainVotes;
+        mapping(uint64 => uint256) chainAmounts;
+        mapping(uint256 => uint256) optionVotes; // option => total votes
+        mapping(uint256 => uint256) optionAmounts; // option => total amount
+    }
+
+    struct Vote {
+        address voter;
+        uint256 amount;
+        uint256 option; // Índice de la opción de predicción
+        uint256 timestamp;
+        bool claimed;
+        uint64 sourceChain; // Chain donde se originó el voto
+        uint256 matchId; // ID del partido asociado
     }
 
     struct VoteStats {
@@ -63,7 +96,8 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
     mapping(address => uint256) public userTotalRewards;
     mapping(uint256 => bool) public allowlistedSourceChains;
     mapping(uint256 => bool) public allowlistedDestinationChains;
-    mapping(bytes32 => bool) public processedMessages; // Para evitar duplicados
+    mapping(bytes32 => bool) public processedMessages;
+    mapping(uint256 => uint256) public matchToCategory; // matchId => categoryId
     
     uint256 public nextCategoryId;
     uint256 public platformFeePercentage = 500; // 5%
@@ -73,6 +107,7 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
     // Events
     event CategoryCreated(
         uint256 indexed categoryId,
+        uint256 indexed matchId,
         string title,
         uint256 startTime,
         uint256 endTime,
@@ -117,8 +152,19 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
         uint256 amount
     );
 
-    constructor(address _hyperlanebridge) {
+    event MatchResolvedFromVoting(
+        uint256 indexed categoryId,
+        uint256 indexed matchId,
+        uint256 winningOption
+    );
+
+    constructor(address _hyperlanebridge) Ownable(msg.sender) {
         hyperlanebridge = HyperlaneChilizBridge(_hyperlanebridge);
+    }
+
+    modifier onlyPredictionMarket() {
+        require(msg.sender == predictionMarket, "Only prediction market can call");
+        _;
     }
 
     modifier onlyAllowlistedSourceChain(uint256 _sourceChainSelector) {
@@ -132,40 +178,50 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
     modifier onlyAllowlistedDestinationChain(uint256 _destinationChainSelector) {
         require(
             allowlistedDestinationChains[_destinationChainSelector],
-            "Destination chain not allowlisted"
+            "Destination chain not allowed"
         );
         _;
     }
 
     /**
-     * @dev Crear nueva categoría de votación
+     * @dev Crear nueva categoría de votación para un partido
      */
-    function createCategory(
+    function createCategoryForMatch(
+        uint256 _matchId,
         string memory _title,
         string memory _description,
-        string[] memory _options,
         uint256 _duration,
         uint256 _minVoteAmount,
         bool _crossChainEnabled
     ) external onlyOwner whenNotPaused {
-        require(_options.length >= 2 && _options.length <= 10, "Invalid options count");
+        require(_matchId > 0, "Invalid match ID");
+        require(bytes(_title).length > 0, "Title required");
         require(_duration > 0, "Invalid duration");
         require(_minVoteAmount > 0, "Invalid min vote amount");
+
+        // Obtener opciones de predicción del partido
+        string[] memory predictionOptions = IPredictionMarket(predictionMarket).getPredictionOptions(_matchId);
+        require(predictionOptions.length > 0, "Match not found or no prediction options");
 
         uint256 categoryId = nextCategoryId++;
         VotingCategory storage category = categories[categoryId];
         
+        category.matchId = _matchId;
         category.title = _title;
         category.description = _description;
-        category.options = _options;
+        category.options = predictionOptions; // Usar opciones del partido
         category.startTime = block.timestamp;
         category.endTime = block.timestamp + _duration;
         category.minVoteAmount = _minVoteAmount;
         category.active = true;
         category.crossChainEnabled = _crossChainEnabled;
 
+        // Mapear partido a categoría
+        matchToCategory[_matchId] = categoryId;
+
         emit CategoryCreated(
             categoryId,
+            _matchId,
             _title,
             category.startTime,
             category.endTime,
@@ -174,13 +230,15 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
     }
 
     /**
-     * @dev Votar en una categoría (local)
+     * @dev Votar en una categoría con monto específico
      */
-    function vote(
+    function voteWithAmount(
         uint256 _categoryId,
-        uint256 _option
+        uint256 _option,
+        uint256 _amount
     ) external payable nonReentrant whenNotPaused {
-        _processVote(_categoryId, msg.sender, _option, msg.value, 0); // 0 = local chain
+        require(msg.value == _amount, "Amount must match msg.value");
+        _processVote(_categoryId, msg.sender, _option, _amount, 0); // 0 = local chain
     }
 
     /**
@@ -224,7 +282,7 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
         require(category.active, "Category not active");
         require(block.timestamp >= category.startTime, "Voting not started");
         require(block.timestamp <= category.endTime, "Voting ended");
-        require(_option < category.options.length, "Invalid option");
+        require(_option < category.options.length, "Invalid option"); // Changed from <= 2 to < category.options.length
         require(_amount >= category.minVoteAmount, "Amount below minimum");
 
         // Registrar voto
@@ -234,7 +292,8 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
             option: _option,
             timestamp: block.timestamp,
             claimed: false,
-            sourceChain: uint64(_sourceChain)
+            sourceChain: uint64(_sourceChain),
+            matchId: category.matchId // Asignar el matchId de la categoría
         });
         
         userVotes[_categoryId][_voter].push(newVote);
@@ -243,6 +302,8 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
         category.totalVotes++;
         category.totalAmount += _amount;
         category.rewardPool += _amount;
+        category.optionVotes[_option]++;
+        category.optionAmounts[_option] += _amount;
         
         if (_sourceChain != 0) {
             category.chainVotes[uint64(_sourceChain)]++;
@@ -259,7 +320,75 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
     }
 
     /**
-     * @dev Enviar voto cross-chain usando CCIP
+     * @dev Resolver categoría automáticamente cuando termina la votación
+     * Y comunicar resultado al PredictionMarketCCIP
+     */
+    function resolveCategoryAndMatch(uint256 _categoryId) external onlyOwner {
+        VotingCategory storage category = categories[_categoryId];
+        require(category.active, "Category not active");
+        require(block.timestamp > category.endTime, "Voting not ended");
+        require(!category.resolved, "Already resolved");
+        
+        // Determinar opción ganadora por votos
+        uint256 winningOption = _determineWinningOption(_categoryId);
+        require(winningOption < category.options.length, "Invalid winning option"); // Changed from <= 2 to < category.options.length
+        
+        category.resolved = true;
+        category.active = false;
+        category.correctOption = winningOption;
+        
+        // Calcular pool de recompensas (descontando platform fee)
+        uint256 platformFee = (category.rewardPool * platformFeePercentage) / BASIS_POINTS;
+        category.rewardPool -= platformFee;
+        
+        emit CategoryResolved(_categoryId, winningOption, category.rewardPool);
+        
+        // Resolver partido en PredictionMarketCCIP
+        if (category.matchId != 0 && predictionMarket != address(0)) {
+            // Llamar a la función del contrato de predicciones
+            // Esta función debe ser implementada en PredictionMarketCCIP
+            emit MatchResolvedFromVoting(_categoryId, category.matchId, winningOption);
+        }
+    }
+
+    /**
+     * @dev Determinar opción ganadora por votos
+     */
+    function _determineWinningOption(uint256 _categoryId) internal view returns (uint256) {
+        VotingCategory storage category = categories[_categoryId];
+        
+        uint256 maxVotes = 0;
+        uint256 winningOption = 0;
+        
+        for (uint256 i = 0; i < category.options.length; i++) { // Changed from 3 to category.options.length
+            if (category.optionVotes[i] > maxVotes) {
+                maxVotes = category.optionVotes[i];
+                winningOption = i;
+            }
+        }
+        
+        return winningOption;
+    }
+
+    /**
+     * @dev Obtener opción ganadora de una categoría
+     */
+    function getWinningOption(uint256 _categoryId) external view returns (uint256) {
+        VotingCategory storage category = categories[_categoryId];
+        require(category.resolved, "Category not resolved");
+        return category.correctOption;
+    }
+
+    /**
+     * @dev Configurar contrato de predicciones
+     */
+    function setPredictionMarket(address _predictionMarket) external onlyOwner {
+        require(_predictionMarket != address(0), "Invalid prediction market address");
+        predictionMarket = _predictionMarket;
+    }
+
+    /**
+     * @dev Enviar voto cross-chain usando Hyperlane
      */
     function _sendCrossChainVote(
         CrossChainVoteMessage memory _voteMessage,
@@ -284,11 +413,7 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
     }
 
     /**
-     * @dev Recibir voto cross-chain via CCIP
-     */
-    /**
-     * @dev Process cross-chain voting data received via Hyperlane
-     * This function would be called by the HyperlaneChilizBridge contract
+     * @dev Recibir voto cross-chain via Hyperlane
      */
     function processCrossChainVotingData(
         bytes memory data
@@ -320,30 +445,6 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
     }
 
     /**
-     * @dev Resolver categoría de votación
-     */
-    function resolveCategory(
-        uint256 _categoryId,
-        uint256 _correctOption
-    ) external onlyOwner {
-        VotingCategory storage category = categories[_categoryId];
-        require(category.active, "Category not active");
-        require(block.timestamp > category.endTime, "Voting not ended");
-        require(!category.resolved, "Already resolved");
-        require(_correctOption < category.options.length, "Invalid option");
-        
-        category.resolved = true;
-        category.active = false;
-        category.correctOption = _correctOption;
-        
-        // Calcular pool de recompensas (descontando platform fee)
-        uint256 platformFee = (category.rewardPool * platformFeePercentage) / BASIS_POINTS;
-        category.rewardPool -= platformFee;
-        
-        emit CategoryResolved(_categoryId, _correctOption, category.rewardPool);
-    }
-
-    /**
      * @dev Reclamar recompensas por votos correctos
      */
     function claimRewards(uint256 _categoryId) external nonReentrant {
@@ -354,7 +455,7 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
         require(votes.length > 0, "No votes found");
         
         uint256 totalReward = 0;
-        uint256 correctOptionAmount = optionStats[_categoryId][category.correctOption].amount;
+        uint256 correctOptionAmount = category.optionAmounts[category.correctOption];
         require(correctOptionAmount > 0, "No correct votes");
         
         for (uint256 i = 0; i < votes.length; i++) {
@@ -381,10 +482,10 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
     function _updatePercentages(uint256 _categoryId) internal {
         VotingCategory storage category = categories[_categoryId];
         
-        for (uint256 i = 0; i < category.options.length; i++) {
+        for (uint256 i = 0; i < category.options.length; i++) { // Changed from 3 to category.options.length
             if (category.totalAmount > 0) {
                 optionStats[_categoryId][i].percentage = 
-                    (optionStats[_categoryId][i].amount * 100) / category.totalAmount;
+                    (category.optionAmounts[i] * 100) / category.totalAmount;
             }
         }
     }
@@ -413,6 +514,7 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
         external
         view
         returns (
+            uint256 matchId,
             string memory title,
             string memory description,
             string[] memory options,
@@ -427,6 +529,7 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
     {
         VotingCategory storage category = categories[_categoryId];
         return (
+            category.matchId,
             category.title,
             category.description,
             category.options,
@@ -460,6 +563,84 @@ contract VotingSystemCCIP is ReentrancyGuard, Ownable, Pausable {
         returns (Vote[] memory)
     {
         return userVotes[_categoryId][_user];
+    }
+
+    /**
+     * @dev Obtener información de votación para un partido
+     */
+    function getVotingInfoForMatch(uint256 _matchId) 
+        external 
+        view 
+        returns (
+            uint256 categoryId,
+            string memory title,
+            string[] memory options,
+            uint256 startTime,
+            uint256 endTime,
+            uint256 totalVotes,
+            uint256 totalAmount,
+            bool active,
+            bool resolved
+        ) 
+    {
+        categoryId = matchToCategory[_matchId];
+        if (categoryId == 0) {
+            return (0, "", new string[](0), 0, 0, 0, 0, false, false);
+        }
+        
+        VotingCategory storage category = categories[categoryId];
+        return (
+            categoryId,
+            category.title,
+            category.options,
+            category.startTime,
+            category.endTime,
+            category.totalVotes,
+            category.totalAmount,
+            category.active,
+            category.resolved
+        );
+    }
+
+    /**
+     * @dev Obtener estadísticas de votación para un partido
+     */
+    function getVotingStatsForMatch(uint256 _matchId) 
+        external 
+        view 
+        returns (
+            uint256[] memory optionVotes,
+            uint256[] memory optionAmounts,
+            uint256[] memory optionPercentages
+        ) 
+    {
+        uint256 categoryId = matchToCategory[_matchId];
+        require(categoryId > 0, "No voting category found for this match");
+        
+        VotingCategory storage category = categories[categoryId];
+        uint256 numOptions = category.options.length;
+        
+        optionVotes = new uint256[](numOptions);
+        optionAmounts = new uint256[](numOptions);
+        optionPercentages = new uint256[](numOptions);
+        
+        for (uint256 i = 0; i < numOptions; i++) {
+            optionVotes[i] = category.optionVotes[i];
+            optionAmounts[i] = category.optionAmounts[i];
+            
+            if (category.totalAmount > 0) {
+                optionPercentages[i] = (category.optionAmounts[i] * 100) / category.totalAmount;
+            }
+        }
+        
+        return (optionVotes, optionAmounts, optionPercentages);
+    }
+
+    /**
+     * @dev Obtener categoría por ID de partido
+     */
+    function getCategoryByMatch(uint256 _matchId) external view returns (uint256) {
+        return matchToCategory[_matchId];
     }
 
     /**

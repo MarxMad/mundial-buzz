@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
 import MatchCard from "@/components/MatchCard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,8 +83,6 @@ const Partidos = () => {
 
   return (
     <div className="min-h-screen bg-background pb-32 md:pb-0">
-      <Navbar />
-      
       <div className="pt-20 pb-10 px-4">
         <div className="container mx-auto">
           {/* Header */}

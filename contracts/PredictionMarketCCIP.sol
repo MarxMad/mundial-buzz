@@ -14,8 +14,17 @@ import "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 import "./HyperlaneChilizBridge.sol";
 
 /**
+ * @title IStakingPool
+ * @dev Interfaz para interactuar con el StakingPool
+ */
+interface IStakingPool {
+    function getUserStake(address _user) external view returns (uint256);
+    function isUserStaked(address _user) external view returns (bool);
+}
+
+/**
  * @title PredictionMarketCCIP
- * @dev Mercado de predicción avanzado con Chainlink CCIP para cross-chain transfers
+ * @dev Mercado de predicción deportiva con Chainlink CCIP para cross-chain transfers
  * Integra VRF para resultados verificables y Price Feeds para conversiones CHZ/USD
  */
 contract PredictionMarketCCIP is 
@@ -38,92 +47,109 @@ contract PredictionMarketCCIP is
     // Hyperlane Bridge for cross-chain communication
     HyperlaneChilizBridge public hyperlanebridge;
     
-    struct Market {
+    // Voting System Contract
+    address public votingSystem;
+    
+    // Staking Pool Contract
+    address public stakingPool;
+    
+    // Configuración de fees
+    uint256 public creatorFee = 100; // 1% en basis points
+    uint256 public platformFee = 300; // 3% en basis points
+    uint256 public constant BASIS_POINTS = 10000;
+    
+    // Requisito mínimo de stake para participar
+    uint256 public minStakeRequired = 50 * 10**18; // 50 CHZ mínimo
+    
+    struct Match {
         uint256 id;
-        string title;
-        string description;
-        address creator;
+        string team1;
+        string team2;
+        string title;           // Título del mercado
+        string[] predictionOptions; // Opciones de predicción (más flexibles)
+        uint256 startTime;
         uint256 endTime;
         uint256 totalPool;
-        uint256 creatorFee; // Fee en basis points (100 = 1%)
-        MarketStatus status;
+        mapping(uint256 => uint256) optionPools; // Pool por opción
+        MatchStatus status;
         uint256 winningOption;
-        string[] options;
-        mapping(uint256 => uint256) optionPools;
-        mapping(address => mapping(uint256 => uint256)) userBets;
-        mapping(address => bool) hasClaimed;
-        uint256 vrfRequestId; // Para resolución automática
-        bool autoResolve; // Si usa VRF para resolución
-        uint256 destinationChainSelector; // Para cross-chain rewards
+        address creator;
+        bool autoResolve;
+        uint256 vrfRequestId;
+        uint256 destinationChainSelector;
+        uint256 creatorReward;
+        uint256 platformReward;
+        uint256 userRewardPool;
+        uint256 minStakeRequired; // Stake mínimo para este mercado
     }
 
-    enum MarketStatus {
+    enum MatchStatus {
         Active,
-        Closed,
+        InProgress,
+        Finished,
         Resolved,
         Cancelled
     }
 
-    mapping(uint256 => Market) public markets;
-    mapping(address => uint256[]) public userMarkets;
-    mapping(uint256 => uint256) public vrfRequestToMarket; // VRF request ID to market ID
+    mapping(uint256 => Match) public matches;
+    // Mapeo de usuarios a información de apuestas
+    mapping(uint256 => mapping(address => mapping(uint256 => uint256))) public userBets; // matchId => user => option => amount
+    mapping(address => uint256[]) public userMatches;
+    mapping(uint256 => uint256) public vrfRequestToMatch;
     mapping(uint256 => bool) public supportedDestinationChains;
     
-    uint256 public nextMarketId = 1;
-    uint256 public platformFee = 250; // 2.5% in basis points
-    uint256 public constant MAX_OPTIONS = 10;
-    uint256 public constant MIN_MARKET_DURATION = 1 hours;
-    uint256 public constant MAX_CREATOR_FEE = 500; // 5% max
+    uint256 public nextMatchId = 1;
     
-    // CCIP Events
-    event MessageSent(
-        bytes32 indexed messageId,
-        uint64 indexed destinationChainSelector,
-        address receiver,
-        uint256 amount,
-        uint256 feeToken
-    );
+    // Constantes
+    uint256 public constant MIN_MATCH_DURATION = 1 hours;
+    uint256 public constant MAX_MATCH_DURATION = 30 days;
+    uint256 public constant MIN_PREDICTION_OPTIONS = 2;
+    uint256 public constant MAX_PREDICTION_OPTIONS = 10;
     
-    event MessageReceived(
-        bytes32 indexed messageId,
-        uint64 indexed sourceChainSelector,
-        address sender,
-        uint256 amount
-    );
-
-    event MarketCreated(
-        uint256 indexed marketId,
-        address indexed creator,
-        string title,
+    // Events
+    event MatchCreated(
+        uint256 indexed matchId,
+        string team1,
+        string team2,
+        uint256 startTime,
         uint256 endTime,
-        bool autoResolve
+        address creator
     );
-
+    
     event BetPlaced(
-        uint256 indexed marketId,
+        uint256 indexed matchId,
         address indexed user,
         uint256 indexed option,
         uint256 amount
     );
-
-    event MarketResolved(
-        uint256 indexed marketId,
+    
+    event MatchResolved(
+        uint256 indexed matchId,
         uint256 winningOption,
         uint256 totalPool,
         bool autoResolved
     );
-
+    
     event RewardClaimed(
-        uint256 indexed marketId,
+        uint256 indexed matchId,
         address indexed user,
         uint256 amount
     );
     
     event CrossChainRewardSent(
-        uint256 indexed marketId,
+        uint256 indexed matchId,
         address indexed user,
         uint256 amount,
         uint256 destinationChain
+    );
+
+    event FeesUpdated(
+        uint256 creatorFee,
+        uint256 platformFee
+    );
+
+    event StakingPoolSet(
+        address indexed stakingPool
     );
 
     constructor(
@@ -146,89 +172,153 @@ contract PredictionMarketCCIP is
         supportedDestinationChains[42161] = true; // Arbitrum
     }
 
-    modifier onlySupportedDestinationChain(uint256 _destinationChainId) {
+    modifier onlyVotingSystem() {
+        require(msg.sender == votingSystem, "Only voting system can call");
+        _;
+    }
+
+    modifier onlyStakers() {
         require(
-            supportedDestinationChains[_destinationChainId],
+            IStakingPool(stakingPool).getUserStake(msg.sender) >= minStakeRequired,
+            "Minimum stake of 50 CHZ required to participate"
+        );
+        _;
+    }
+
+    modifier onlySupportedDestinationChain(uint256 _destinationChainSelector) {
+        require(
+            supportedDestinationChains[_destinationChainSelector],
             "Destination chain not supported"
         );
         _;
     }
 
     /**
-     * @dev Crear mercado con opción de auto-resolución via VRF
+     * @dev Crear nuevo partido para apuestas
      */
-    function createMarket(
+    function createMatch(
+        string memory _team1,
+        string memory _team2,
         string memory _title,
-        string memory _description,
-        string[] memory _options,
+        string[] memory _predictionOptions,
+        uint256 _startTime,
         uint256 _duration,
-        uint256 _creatorFee,
+        uint256 _minStakeRequired,
         bool _autoResolve,
-        uint256 _destinationChainId
-    ) external payable whenNotPaused {
-        require(_options.length >= 2 && _options.length <= MAX_OPTIONS, "Invalid options count");
-        require(_duration >= MIN_MARKET_DURATION, "Duration too short");
-        require(_creatorFee <= MAX_CREATOR_FEE, "Creator fee too high");
+        uint256 _destinationChainSelector
+    ) external payable onlyStakers whenNotPaused {
+        require(bytes(_team1).length > 0, "Team 1 name required");
+        require(bytes(_team2).length > 0, "Team 2 name required");
+        require(bytes(_title).length > 0, "Title required");
+        require(_predictionOptions.length >= MIN_PREDICTION_OPTIONS, "Too few prediction options");
+        require(_predictionOptions.length <= MAX_PREDICTION_OPTIONS, "Too many prediction options");
+        require(_startTime > block.timestamp, "Start time must be in future");
+        require(_duration >= MIN_MATCH_DURATION, "Duration too short");
+        require(_duration <= MAX_MATCH_DURATION, "Duration too long");
+        require(_minStakeRequired >= 100 * 10**18, "Minimum stake must be at least 100 CHZ");
         require(msg.value >= 0.01 ether, "Minimum creation fee required");
         
-        if (_destinationChainId != 0) {
+        // Validar que el usuario tenga suficiente stake
+        uint256 userStake = IStakingPool(stakingPool).getUserStake(msg.sender);
+        require(userStake >= _minStakeRequired, "Insufficient stake for this market");
+        
+        if (_destinationChainSelector != 0) {
             require(
-                supportedDestinationChains[_destinationChainId],
+                supportedDestinationChains[_destinationChainSelector],
                 "Destination chain not supported"
             );
         }
 
-        uint256 marketId = nextMarketId++;
-        Market storage market = markets[marketId];
+        uint256 matchId = nextMatchId++;
+        Match storage matchData = matches[matchId];
         
-        market.id = marketId;
-        market.title = _title;
-        market.description = _description;
-        market.creator = msg.sender;
-        market.endTime = block.timestamp + _duration;
-        market.creatorFee = _creatorFee;
-        market.status = MarketStatus.Active;
-        market.options = _options;
-        market.totalPool = msg.value;
-        market.autoResolve = _autoResolve;
-        market.destinationChainSelector = _destinationChainId;
+        // Calcular fees
+        uint256 creatorReward = (msg.value * creatorFee) / BASIS_POINTS;
+        uint256 platformReward = (msg.value * platformFee) / BASIS_POINTS;
+        uint256 userRewardPool = msg.value - creatorReward - platformReward;
+        
+        matchData.id = matchId;
+        matchData.team1 = _team1;
+        matchData.team2 = _team2;
+        matchData.title = _title;
+        matchData.predictionOptions = _predictionOptions;
+        matchData.startTime = _startTime;
+        matchData.endTime = _startTime + _duration;
+        matchData.creator = msg.sender;
+        matchData.status = MatchStatus.Active;
+        matchData.autoResolve = _autoResolve;
+        matchData.destinationChainSelector = _destinationChainSelector;
+        matchData.totalPool = userRewardPool;
+        matchData.creatorReward = creatorReward;
+        matchData.platformReward = platformReward;
+        matchData.userRewardPool = userRewardPool;
+        matchData.minStakeRequired = _minStakeRequired;
 
-        userMarkets[msg.sender].push(marketId);
+        userMatches[msg.sender].push(matchId);
 
-        emit MarketCreated(marketId, msg.sender, _title, market.endTime, _autoResolve);
+        // Transferir recompensa del creador inmediatamente
+        (bool success1, ) = payable(msg.sender).call{value: creatorReward}("");
+        require(success1, "Creator reward transfer failed");
+
+        emit MatchCreated(matchId, _team1, _team2, _startTime, matchData.endTime, msg.sender);
     }
 
     /**
-     * @dev Apostar en un mercado
+     * @dev Apostar en un partido
      */
-    function placeBet(uint256 _marketId, uint256 _option) 
+    function placeBet(uint256 _matchId, uint256 _option) 
         external 
         payable 
+        onlyStakers
         nonReentrant 
         whenNotPaused 
     {
-        Market storage market = markets[_marketId];
-        require(market.status == MarketStatus.Active, "Market not active");
-        require(block.timestamp < market.endTime, "Market ended");
-        require(_option < market.options.length, "Invalid option");
+        Match storage matchData = matches[_matchId];
+        require(matchData.status == MatchStatus.Active, "Match not active");
+        require(block.timestamp < matchData.endTime, "Match ended");
+        require(_option < matchData.predictionOptions.length, "Invalid option"); // Validar que la opción sea válida
         require(msg.value > 0, "Bet amount must be greater than 0");
 
-        market.userBets[msg.sender][_option] += msg.value;
-        market.optionPools[_option] += msg.value;
-        market.totalPool += msg.value;
+        // Validar que el stake mínimo sea suficiente
+        require(msg.value >= matchData.minStakeRequired, "Minimum stake required not met");
 
-        emit BetPlaced(_marketId, msg.sender, _option, msg.value);
+        userBets[_matchId][msg.sender][_option] += msg.value;
+        matchData.totalPool += msg.value;
+
+        // Actualizar pools por opción
+        matchData.optionPools[_option] += msg.value;
+
+        emit BetPlaced(_matchId, msg.sender, _option, msg.value);
     }
 
     /**
-     * @dev Resolver mercado automáticamente usando VRF
+     * @dev Resolver partido basado en votos del sistema de votación
      */
-    function requestAutoResolve(uint256 _marketId) external {
-        Market storage market = markets[_marketId];
-        require(market.autoResolve, "Market not set for auto-resolve");
-        require(market.status == MarketStatus.Active, "Market not active");
-        require(block.timestamp >= market.endTime, "Market not ended");
-        require(market.vrfRequestId == 0, "Already requested");
+    function resolveMatchFromVoting(uint256 _matchId, uint256 _winningOption) 
+        external 
+        onlyVotingSystem 
+        nonReentrant 
+    {
+        Match storage matchData = matches[_matchId];
+        require(matchData.status == MatchStatus.Active, "Match not active");
+        require(block.timestamp >= matchData.endTime, "Match not ended");
+        require(_winningOption < matchData.predictionOptions.length, "Invalid winning option"); // Validar que la opción ganadora sea válida
+        
+        matchData.status = MatchStatus.Resolved;
+        matchData.winningOption = _winningOption;
+
+        emit MatchResolved(_matchId, _winningOption, matchData.totalPool, false);
+    }
+
+    /**
+     * @dev Resolver partido automáticamente usando VRF (backup)
+     */
+    function requestAutoResolve(uint256 _matchId) external {
+        Match storage matchData = matches[_matchId];
+        require(matchData.autoResolve, "Match not set for auto-resolve");
+        require(matchData.status == MatchStatus.Active, "Match not active");
+        require(block.timestamp >= matchData.endTime, "Match not ended");
+        require(matchData.vrfRequestId == 0, "Already requested");
 
         uint256 requestId = COORDINATOR.requestRandomWords(
             keyHash,
@@ -238,75 +328,56 @@ contract PredictionMarketCCIP is
             numWords
         );
         
-        market.vrfRequestId = requestId;
-        vrfRequestToMarket[requestId] = _marketId;
+        matchData.vrfRequestId = requestId;
+        vrfRequestToMatch[requestId] = _matchId;
     }
 
     /**
-     * @dev Callback de VRF para resolver mercado
+     * @dev Callback de VRF para resolver partido (backup)
      */
     function fulfillRandomWords(
         uint256 requestId,
         uint256[] memory randomWords
     ) internal override {
-        uint256 marketId = vrfRequestToMarket[requestId];
-        Market storage market = markets[marketId];
+        uint256 matchId = vrfRequestToMatch[requestId];
+        Match storage matchData = matches[matchId];
         
-        require(market.id != 0, "Market not found");
-        require(market.status == MarketStatus.Active, "Market not active");
+        require(matchData.id != 0, "Match not found");
+        require(matchData.status == MatchStatus.Active, "Match not active");
         
-        uint256 winningOption = randomWords[0] % market.options.length;
-        market.status = MarketStatus.Resolved;
-        market.winningOption = winningOption;
+        uint256 winningOption = randomWords[0] % matchData.predictionOptions.length; // 0, 1, o 2
+        matchData.status = MatchStatus.Resolved;
+        matchData.winningOption = winningOption;
 
-        emit MarketResolved(marketId, winningOption, market.totalPool, true);
+        emit MatchResolved(matchId, winningOption, matchData.totalPool, true);
     }
 
     /**
-     * @dev Resolver mercado manualmente (solo creador)
-     */
-    function resolveMarket(uint256 _marketId, uint256 _winningOption) 
-        external 
-        nonReentrant 
-    {
-        Market storage market = markets[_marketId];
-        require(msg.sender == market.creator, "Only creator can resolve");
-        require(market.status == MarketStatus.Active, "Market not active");
-        require(block.timestamp >= market.endTime, "Market not ended");
-        require(_winningOption < market.options.length, "Invalid winning option");
-        require(!market.autoResolve, "Market set for auto-resolve");
-
-        market.status = MarketStatus.Resolved;
-        market.winningOption = _winningOption;
-
-        emit MarketResolved(_marketId, _winningOption, market.totalPool, false);
-    }
-
-    /**
-     * @dev Reclamar recompensas (local o cross-chain)
+     * @dev Reclamar recompensas por apuestas ganadoras
      */
     function claimReward(
-        uint256 _marketId, 
+        uint256 _matchId, 
         bool _crossChain,
         uint256 _destinationChainId,
         address _destinationReceiver
     ) external payable nonReentrant {
-        Market storage market = markets[_marketId];
-        require(market.status == MarketStatus.Resolved, "Market not resolved");
-        require(!market.hasClaimed[msg.sender], "Already claimed");
+        Match storage matchData = matches[_matchId];
+        require(matchData.status == MatchStatus.Resolved, "Match not resolved");
         
-        uint256 userBet = market.userBets[msg.sender][market.winningOption];
+        uint256 userBet = userBets[_matchId][msg.sender][matchData.winningOption];
         require(userBet > 0, "No winning bet");
 
-        uint256 winningPool = market.optionPools[market.winningOption];
+        // Calcular recompensa proporcional del pool de usuarios (96%)
+        uint256 winningPool = matchData.optionPools[matchData.winningOption];
+        
         require(winningPool > 0, "No winning pool");
+        
+        // Usar solo el pool de usuarios (96%) para recompensas
+        uint256 reward = (userBet * matchData.userRewardPool) / winningPool;
+        require(reward > 0, "No reward to claim");
 
-        // Calcular recompensa proporcional
-        uint256 totalFees = (market.totalPool * (platformFee + market.creatorFee)) / 10000;
-        uint256 rewardPool = market.totalPool - totalFees;
-        uint256 reward = (userBet * rewardPool) / winningPool;
-
-        market.hasClaimed[msg.sender] = true;
+        // Marcar apuesta como reclamada
+        userBets[_matchId][msg.sender][matchData.winningOption] = 0;
 
         if (_crossChain && _destinationChainId != 0 && _destinationReceiver != address(0)) {
             require(
@@ -314,14 +385,114 @@ contract PredictionMarketCCIP is
                 "Destination chain not supported"
             );
             
-            _sendCrossChainReward(_destinationReceiver, reward, _destinationChainId, _marketId);
+            _sendCrossChainReward(_destinationReceiver, reward, _destinationChainId, _matchId);
             
-            emit CrossChainRewardSent(_marketId, msg.sender, reward, _destinationChainId);
+            emit CrossChainRewardSent(_matchId, msg.sender, reward, _destinationChainId);
         } else {
             (bool success, ) = payable(msg.sender).call{value: reward}("");
             require(success, "Transfer failed");
-            emit RewardClaimed(_marketId, msg.sender, reward);
+            emit RewardClaimed(_matchId, msg.sender, reward);
         }
+    }
+
+    /**
+     * @dev Configurar sistema de votación
+     */
+    function setVotingSystem(address _votingSystem) external onlyOwner {
+        require(_votingSystem != address(0), "Invalid voting system address");
+        votingSystem = _votingSystem;
+    }
+
+    /**
+     * @dev Configurar Staking Pool
+     */
+    function setStakingPool(address _stakingPool) external onlyOwner {
+        require(_stakingPool != address(0), "Invalid staking pool address");
+        stakingPool = _stakingPool;
+        emit StakingPoolSet(_stakingPool);
+    }
+
+    /**
+     * @dev Configurar requisito mínimo de stake
+     */
+    function setMinStakeRequired(uint256 _minStake) external onlyOwner {
+        minStakeRequired = _minStake;
+    }
+
+    /**
+     * @dev Configurar fees
+     */
+    function setFees(uint256 _creatorFee, uint256 _platformFee) external onlyOwner {
+        require(_creatorFee + _platformFee <= 1000, "Total fees cannot exceed 10%");
+        creatorFee = _creatorFee;
+        platformFee = _platformFee;
+        emit FeesUpdated(_creatorFee, _platformFee);
+    }
+
+    /**
+     * @dev Obtener información del partido
+     */
+    function getMatch(uint256 _matchId) 
+        external 
+        view 
+        returns (
+            uint256 id,
+            string memory team1,
+            string memory team2,
+            string memory title,
+            string[] memory predictionOptions,
+            uint256 startTime,
+            uint256 endTime,
+            uint256 totalPool,
+            MatchStatus status,
+            uint256 winningOption,
+            bool autoResolve,
+            address creator,
+            uint256 creatorReward,
+            uint256 platformReward,
+            uint256 userRewardPool,
+            uint256 minStakeRequired
+        ) 
+    {
+        Match storage matchData = matches[_matchId];
+        return (
+            matchData.id,
+            matchData.team1,
+            matchData.team2,
+            matchData.title,
+            matchData.predictionOptions,
+            matchData.startTime,
+            matchData.endTime,
+            matchData.totalPool,
+            matchData.status,
+            matchData.winningOption,
+            matchData.autoResolve,
+            matchData.creator,
+            matchData.creatorReward,
+            matchData.platformReward,
+            matchData.userRewardPool,
+            matchData.minStakeRequired
+        );
+    }
+
+    /**
+     * @dev Obtener apuestas de usuario
+     */
+    function getUserBets(uint256 _matchId, address _user) 
+        external 
+        view 
+        returns (uint256[3] memory bets) 
+    {
+        bets[0] = userBets[_matchId][_user][0]; // Team1
+        bets[1] = userBets[_matchId][_user][1]; // Team2
+        bets[2] = userBets[_matchId][_user][2]; // Draw
+    }
+
+    /**
+     * @dev Obtener partidos de usuario
+     */
+    function getUserMatches(address _user) external view returns (uint256[] memory) {
+        return userMatches[_user];
     }
 
     /**
@@ -331,12 +502,12 @@ contract PredictionMarketCCIP is
         address _receiver,
         uint256 _amount,
         uint256 /* _destinationChainId */,
-        uint256 _marketId
+        uint256 _matchId
     ) internal {
         bytes memory data = abi.encode(
             _receiver,
             _amount,
-            _marketId
+            _matchId
         );
         
         // Send message via Hyperlane bridge
@@ -345,8 +516,6 @@ contract PredictionMarketCCIP is
             data
         );
     }
-
-
 
     /**
      * @dev Obtener precio CHZ/USD desde Chainlink Price Feed
@@ -360,58 +529,10 @@ contract PredictionMarketCCIP is
      * @dev Configurar chains soportadas para Hyperlane
      */
     function setSupportedDestinationChain(
-        uint256 _destinationChainId,
+        uint256 _destinationChainSelector,
         bool _supported
     ) external onlyOwner {
-        supportedDestinationChains[_destinationChainId] = _supported;
-    }
-
-    /**
-     * @dev Obtener información del mercado
-     */
-    function getMarket(uint256 _marketId) 
-        external 
-        view 
-        returns (
-            uint256 id,
-            string memory title,
-            string memory description,
-            address creator,
-            uint256 endTime,
-            uint256 totalPool,
-            MarketStatus status,
-            string[] memory options,
-            bool autoResolve
-        ) 
-    {
-        Market storage market = markets[_marketId];
-        return (
-            market.id,
-            market.title,
-            market.description,
-            market.creator,
-            market.endTime,
-            market.totalPool,
-            market.status,
-            market.options,
-            market.autoResolve
-        );
-    }
-
-    /**
-     * @dev Obtener pools de opciones
-     */
-    function getOptionPools(uint256 _marketId) 
-        external 
-        view 
-        returns (uint256[] memory pools) 
-    {
-        Market storage market = markets[_marketId];
-        pools = new uint256[](market.options.length);
-        
-        for (uint256 i = 0; i < market.options.length; i++) {
-            pools[i] = market.optionPools[i];
-        }
+        supportedDestinationChains[_destinationChainSelector] = _supported;
     }
 
     /**
@@ -440,4 +561,95 @@ contract PredictionMarketCCIP is
      * @dev Recibir ETH/CHZ
      */
     receive() external payable {}
+
+    /**
+     * @dev Obtener opciones de predicción de un partido
+     */
+    function getPredictionOptions(uint256 _matchId) 
+        external 
+        view 
+        returns (string[] memory) 
+    {
+        return matches[_matchId].predictionOptions;
+    }
+
+    /**
+     * @dev Obtener pool de una opción específica
+     */
+    function getOptionPool(uint256 _matchId, uint256 _option) 
+        external 
+        view 
+        returns (uint256) 
+    {
+        require(_option < matches[_matchId].predictionOptions.length, "Invalid option");
+        return matches[_matchId].optionPools[_option];
+    }
+
+    /**
+     * @dev Obtener pools de todas las opciones
+     */
+    function getAllOptionPools(uint256 _matchId) 
+        external 
+        view 
+        returns (uint256[] memory pools) 
+    {
+        Match storage matchData = matches[_matchId];
+        uint256 numOptions = matchData.predictionOptions.length;
+        pools = new uint256[](numOptions);
+        
+        for (uint256 i = 0; i < numOptions; i++) {
+            pools[i] = matchData.optionPools[i];
+        }
+        
+        return pools;
+    }
+
+    /**
+     * @dev Resolver partido con datos reales del partido
+     */
+    function resolveMatchWithRealData(
+        uint256 _matchId,
+        uint256 _homeScore,
+        uint256 _awayScore
+    ) external onlyOwner {
+        Match storage matchData = matches[_matchId];
+        require(matchData.status == MatchStatus.Active, "Match not active");
+        require(block.timestamp >= matchData.endTime, "Match not ended");
+        
+        // Determinar ganador basado en resultado real
+        uint256 winningOption;
+        if (_homeScore > _awayScore) {
+            winningOption = 0; // Team1 gana
+        } else if (_awayScore > _homeScore) {
+            winningOption = 1; // Team2 gana
+        } else {
+            winningOption = 2; // Empate (si existe esta opción)
+        }
+        
+        // Validar que la opción ganadora existe
+        require(winningOption < matchData.predictionOptions.length, "Winning option not available");
+        
+        matchData.status = MatchStatus.Resolved;
+        matchData.winningOption = winningOption;
+
+        emit MatchResolved(_matchId, winningOption, matchData.totalPool, false);
+    }
+
+    /**
+     * @dev Resolver partido con opción específica (para casos especiales)
+     */
+    function resolveMatchWithOption(
+        uint256 _matchId,
+        uint256 _winningOption
+    ) external onlyOwner {
+        Match storage matchData = matches[_matchId];
+        require(matchData.status == MatchStatus.Active, "Match not active");
+        require(block.timestamp >= matchData.endTime, "Match not ended");
+        require(_winningOption < matchData.predictionOptions.length, "Invalid winning option");
+        
+        matchData.status = MatchStatus.Resolved;
+        matchData.winningOption = _winningOption;
+
+        emit MatchResolved(_matchId, _winningOption, matchData.totalPool, false);
+    }
 }

@@ -1,86 +1,107 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { RefreshCw, Sparkles, Menu, User, Wallet } from 'lucide-react'
-import { useState } from 'react'
-import { useChilizWallet } from '@/hooks/useChilizWallet'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Button } from './ui/button'
+import { Wallet, LogOut, Network } from 'lucide-react'
+import { useGeminiWallet } from '../hooks/useGeminiWallet'
+import { baseSepolia, chilizSpicy } from '../lib/chains'
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { isConnected, address, connectWallet, disconnectWallet, isConnecting, isOnChilizNetwork, switchToChiliz, networkName } = useChilizWallet()
+  
+  const {
+    address,
+    isConnected,
+    chainId,
+    isConnecting,
+    isSwitching,
+    connectGemini,
+    disconnect,
+    switchToBaseSepolia,
+    switchToChilizSpicy,
+    getCurrentNetworkName,
+    isOnCorrectNetwork
+  } = useGeminiWallet()
+
+  const handleDisconnect = () => {
+    disconnect()
+  }
 
   return (
-    <nav className="bg-card-gradient backdrop-blur-md border-b-2 border-sports-orange/20 sticky top-0 z-50 shadow-premium">
+    <nav className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-xl border-b border-slate-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center hover:opacity-80 transition-all duration-300 group">
+          <div className="flex-shrink-0">
+            <Link to="/" className="flex items-center space-x-2">
               <img 
                 src="/LOGOWCP.png" 
                 alt="Mundial Buzz" 
-                className="h-12 w-auto transition-all duration-300 group-hover:scale-110"
+                className="h-12 w-auto transition-all duration-300 hover:scale-110"
               />
             </Link>
           </div>
 
-          {/* Wallet Connection */}
+          {/* Wallet Connection - Con Gemini Wallet real */}
           <div className="flex items-center space-x-4">
             {!isConnected ? (
-              <Button 
-                onClick={() => connectWallet()}
+              <Button
+                onClick={connectGemini}
                 disabled={isConnecting}
-                size="sm"
-                className="bg-action-gradient hover:shadow-premium font-sports font-bold text-white px-6 py-2 transition-all duration-300 transform hover:scale-105 border border-sports-orange/30"
+                className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-black font-semibold px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-lg"
               >
-                <Sparkles className="h-4 w-4 mr-2" />
-                {isConnecting ? 'Connecting...' : 'Connect'}
+                <Wallet className="w-4 h-4" />
+                <span>{isConnecting ? 'Conectando...' : 'Conectar Gemini'}</span>
               </Button>
             ) : (
-              <div className="flex items-center space-x-3">
-                {/* Network Info */}
+            
+              <div className="flex items-center space-x-2">
+                {/* Network Indicator */}
                 <div className="flex items-center space-x-2">
-                  <Badge 
-                    variant={isOnChilizNetwork ? "default" : "destructive"}
-                    className={`font-sports text-xs font-semibold ${isOnChilizNetwork ? 'bg-sports-green border-sports-green/50' : 'bg-sports-red border-sports-red/50'} border`}
-                  >
-                    {isOnChilizNetwork ? 'Chiliz Spicy' : `${networkName} Network`}
-                  </Badge>
-                  
-                  {!isOnChilizNetwork && (
-                    <Button
-                      onClick={() => switchToChiliz()}
-                      size="sm"
-                      variant="outline"
-                      className="font-sports text-xs font-semibold border-sports-orange text-sports-orange hover:bg-sports-orange hover:text-white transition-all duration-300"
-                    >
-                      <RefreshCw className="h-3 w-3 mr-1" />
-                      Switch to Chiliz
-                    </Button>
-                  )}
+                  <Network className="w-4 h-4" />
+                  <span className="text-sm text-gray-300">
+                    {getCurrentNetworkName()}
+                  </span>
                 </div>
 
-                {/* Address */}
-                {address && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="font-sports text-xs font-semibold px-4 py-2 border-sports-blue/50 text-sports-blue hover:bg-sports-blue/10 hover:border-sports-blue transition-all duration-300"
-                  >
-                    <User className="h-3 w-3 mr-2" />
-                    {address.slice(0, 6)}...{address.slice(-4)}
-                  </Button>
-                )}
+                {/* Network Switch Buttons */}
+                <Button
+                  onClick={switchToBaseSepolia}
+                  disabled={isSwitching || isOnCorrectNetwork(baseSepolia.id)}
+                  className={`px-3 py-2 text-xs rounded-md transition-colors ${
+                    isOnCorrectNetwork(baseSepolia.id) 
+                      ? 'bg-blue-700 text-white cursor-not-allowed' 
+                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
+                >
+                  Base
+                </Button>
+                
+                <Button
+                  onClick={switchToChilizSpicy}
+                  disabled={isSwitching || isOnCorrectNetwork(chilizSpicy.id)}
+                  className={`px-3 py-2 text-xs rounded-md transition-colors ${
+                    isOnCorrectNetwork(chilizSpicy.id) 
+                      ? 'bg-green-700 text-white cursor-not-allowed' 
+                      : 'bg-green-600 hover:bg-green-700 text-white'
+                  }`}
+                >
+                  Chiliz
+                </Button>
+
+                {/* Wallet Info */}
+                <div className="bg-slate-800 px-3 py-2 rounded-md border border-slate-600">
+                  <span className="text-sm text-gray-300">
+                    {address?.slice(0, 6)}...{address?.slice(-4)}
+                  </span>
+                </div>
 
                 {/* Disconnect Button */}
                 <Button
-                  onClick={() => disconnectWallet()}
-                  size="sm"
-                  variant="outline"
-                  className="font-sports text-xs font-semibold border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300"
+                  onClick={handleDisconnect}
+                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md transition-colors flex items-center space-x-2"
                 >
-                  <Wallet className="h-3 w-3 mr-2" />
-                  Disconnect
+                  <LogOut className="w-4 h-4" />
+                  <span className="text-sm">Desconectar</span>
                 </Button>
               </div>
             )}
@@ -91,4 +112,4 @@ const Navbar = () => {
   )
 }
 
-export default Navbar;
+export default Navbar
