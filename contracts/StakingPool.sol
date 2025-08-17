@@ -208,7 +208,7 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
      * @dev Obtener información completa del staker
      */
     function getStakerInfo(address _user) external view returns (
-        uint256 stakedAmount,
+            uint256 stakedAmount,
         uint256 stakingTimestamp,
         uint256 lastRewardClaim,
         uint256 totalRewardsClaimed,
@@ -229,7 +229,7 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
             getTierMultiplier(staker.stakedAmount)
         );
     }
-    
+
     /**
      * @dev Verificar si usuario tiene stake mínimo
      */
@@ -313,11 +313,11 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
     function pause() external onlyOwner {
         _pause();
     }
-    
+
     function unpause() external onlyOwner {
         _unpause();
     }
-    
+
     /**
      * @dev Recibir ETH/CHZ
      */

@@ -61,7 +61,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen pt-20 pb-10 px-4 relative overflow-hidden">
+    <div className="min-h-screen pt-20 pb-24 md:pb-10 px-4 relative overflow-hidden">
       <SportsPattern className="fixed inset-0" opacity={0.05} />
       <div className="container mx-auto relative z-10">
         {/* Welcome Section */}
@@ -74,7 +74,7 @@ const Dashboard = () => {
               </div>
             </div>
             <h1 className="text-6xl md:text-7xl font-display font-bold text-white mb-6">
-              Predictions <span className="bg-sports-gradient bg-clip-text text-transparent">Dashboard</span>
+              Predictions <span className="bg-sports-gradient bg-clip-text text-transparent"></span>
             </h1>
             <p className="text-2xl font-primary text-gray-200 mb-12 max-w-3xl mx-auto leading-relaxed">
               🏆 Explore upcoming FIFA World Cup 2026 matches and make your on-chain predictions
@@ -162,7 +162,7 @@ const Dashboard = () => {
         </div>
 
         {/* Load More */}
-        <div className="text-center mt-16">
+        <div className="text-center mt-16 mb-24 md:mb-8">
           <Button 
             variant="outline" 
             size="lg" 

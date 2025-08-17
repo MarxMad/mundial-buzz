@@ -82,7 +82,7 @@ const Partidos = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-32 md:pb-0">
+    <div className="min-h-screen bg-background pb-24 md:pb-8">
       <div className="pt-20 pb-10 px-4">
         <div className="container mx-auto">
           {/* Header */}

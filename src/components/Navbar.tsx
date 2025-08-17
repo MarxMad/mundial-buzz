@@ -32,12 +32,18 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center space-x-2">
+            <Link to="/" className="flex items-center space-x-3">
               <img 
                 src="/LOGOWCP.png" 
                 alt="Mundial Buzz" 
                 className="h-12 w-auto transition-all duration-300 hover:scale-110"
               />
+              <div className="hidden sm:block">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+                  MUNDIAL BUZZ
+                </h1>
+                <p className="text-xs text-gray-400 -mt-1">Web3 Sports Platform</p>
+              </div>
             </Link>
           </div>
 
