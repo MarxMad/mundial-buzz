@@ -4,13 +4,15 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title StakingPool
- * @dev Sistema de staking para participación en predicciones deportivas
+ * @dev Sistema de staking seguro para participación en predicciones deportivas
  * Los usuarios hacen stake de CHZ para participar en la plataforma
  */
 contract StakingPool is ReentrancyGuard, Ownable, Pausable {
+    using SafeMath for uint256;
     
     struct Staker {
         uint256 stakedAmount;
@@ -33,7 +35,7 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
     StakingTier[] public stakingTiers;
     
     // Configuración
-    uint256 public minStakeAmount = 50 * 10**18; // 50 CHZ mínimo
+    uint256 public minStakeAmount = 100 * 10**18; // 100 CHZ mínimo (actualizado)
     uint256 public stakingPeriod = 7 days; // Período mínimo de lock
     uint256 public rewardRate = 500; // 5% APY base
     uint256 public totalStaked;
@@ -46,27 +48,27 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
     event StakingTierUpdated(uint256 tierIndex, uint256 minAmount, uint256 multiplier);
     
     constructor() Ownable(msg.sender) {
-        // Inicializar tiers de staking
+        // Inicializar tiers de staking (actualizados para coincidir con frontend)
         stakingTiers.push(StakingTier({
-            minAmount: 50 * 10**18,    // 50 CHZ
+            minAmount: 100 * 10**18,   // 100 CHZ
             multiplier: 100,            // 1x
             name: "Bronze"
         }));
         
         stakingTiers.push(StakingTier({
-            minAmount: 200 * 10**18,   // 200 CHZ
+            minAmount: 500 * 10**18,   // 500 CHZ
             multiplier: 120,            // 1.2x
             name: "Silver"
         }));
         
         stakingTiers.push(StakingTier({
-            minAmount: 500 * 10**18,   // 500 CHZ
+            minAmount: 1000 * 10**18,  // 1000 CHZ
             multiplier: 150,            // 1.5x
             name: "Gold"
         }));
         
         stakingTiers.push(StakingTier({
-            minAmount: 1000 * 10**18,  // 1000 CHZ
+            minAmount: 2500 * 10**18,  // 2500 CHZ
             multiplier: 200,            // 2x
             name: "Platinum"
         }));
@@ -85,7 +87,7 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
         staker.lastRewardClaim = block.timestamp;
         staker.isActive = true;
         
-        totalStaked += msg.value;
+        totalStaked = totalStaked.add(msg.value);
         
         emit Staked(msg.sender, msg.value, block.timestamp);
     }
@@ -97,13 +99,16 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
         Staker storage staker = stakers[msg.sender];
         require(staker.isActive, "Not staked");
         require(
-            block.timestamp >= staker.stakingTimestamp + stakingPeriod,
+            block.timestamp >= staker.stakingTimestamp.add(stakingPeriod),
             "Staking period not completed"
         );
         
+        // Guardar valores antes de resetear
+        uint256 stakedAmount = staker.stakedAmount;
+        
         // Calcular recompensas pendientes
         uint256 pendingRewards = calculateRewards(msg.sender);
-        uint256 totalToReturn = staker.stakedAmount + pendingRewards;
+        uint256 totalToReturn = stakedAmount.add(pendingRewards);
         
         // Resetear staker
         staker.isActive = false;
@@ -111,14 +116,15 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
         staker.stakingTimestamp = 0;
         staker.lastRewardClaim = 0;
         
-        totalStaked -= staker.stakedAmount;
-        totalRewardsDistributed += pendingRewards;
+        // Actualizar totales (CORREGIDO)
+        totalStaked = totalStaked.sub(stakedAmount);
+        totalRewardsDistributed = totalRewardsDistributed.add(pendingRewards);
         
         // Transferir fondos
         (bool success, ) = payable(msg.sender).call{value: totalToReturn}("");
         require(success, "Transfer failed");
         
-        emit Unstaked(msg.sender, staker.stakedAmount, block.timestamp);
+        emit Unstaked(msg.sender, stakedAmount, block.timestamp);
         if (pendingRewards > 0) {
             emit RewardsClaimed(msg.sender, pendingRewards);
         }
@@ -135,8 +141,8 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
         require(pendingRewards > 0, "No rewards to claim");
         
         staker.lastRewardClaim = block.timestamp;
-        staker.totalRewardsClaimed += pendingRewards;
-        totalRewardsDistributed += pendingRewards;
+        staker.totalRewardsClaimed = staker.totalRewardsClaimed.add(pendingRewards);
+        totalRewardsDistributed = totalRewardsDistributed.add(pendingRewards);
         
         (bool success, ) = payable(msg.sender).call{value: pendingRewards}("");
         require(success, "Transfer failed");
@@ -145,21 +151,26 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
     }
     
     /**
-     * @dev Calcular recompensas pendientes
+     * @dev Calcular recompensas pendientes (CORREGIDO)
      */
     function calculateRewards(address _user) public view returns (uint256) {
         Staker storage staker = stakers[_user];
         if (!staker.isActive || staker.stakedAmount == 0) return 0;
         
-        uint256 timeStaked = block.timestamp - staker.lastRewardClaim;
-        uint256 timeInYears = timeStaked / 365 days;
+        uint256 timeStaked = block.timestamp.sub(staker.lastRewardClaim);
+        
+        // Calcular recompensas por día (CORREGIDO)
+        uint256 daysStaked = timeStaked.div(1 days);
+        if (daysStaked == 0) return 0;
         
         // Obtener multiplicador del tier
         uint256 tierMultiplier = getTierMultiplier(staker.stakedAmount);
         
-        // Calcular recompensas con multiplicador
-        uint256 baseReward = (staker.stakedAmount * rewardRate * timeInYears) / 10000;
-        uint256 totalReward = (baseReward * tierMultiplier) / 100;
+        // Calcular recompensas diarias (CORREGIDO)
+        // rewardRate = 500 (5%) / 365 días = ~0.0137% por día
+        uint256 dailyRewardRate = rewardRate.div(365);
+        uint256 baseReward = staker.stakedAmount.mul(dailyRewardRate).mul(daysStaked).div(10000);
+        uint256 totalReward = baseReward.mul(tierMultiplier).div(100);
         
         return totalReward;
     }
@@ -177,20 +188,20 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
     }
     
     /**
-     * @dev Obtener tier del usuario
+     * @dev Obtener tier del usuario (CORREGIDO)
      */
     function getUserTier(address _user) external view returns (string memory) {
         Staker storage staker = stakers[_user];
         if (!staker.isActive) return "None";
         
-        uint256 tierIndex = 0;
-        for (uint256 i = 0; i < stakingTiers.length; i++) {
+        // Buscar el tier más alto que el usuario califique
+        for (uint256 i = stakingTiers.length - 1; i >= 0; i--) {
             if (staker.stakedAmount >= stakingTiers[i].minAmount) {
-                tierIndex = i;
+                return stakingTiers[i].name;
             }
         }
         
-        return stakingTiers[tierIndex].name;
+        return "None";
     }
     
     /**
@@ -275,6 +286,10 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
         uint256 _stakingPeriod,
         uint256 _rewardRate
     ) external onlyOwner {
+        require(_minStakeAmount > 0, "Min stake amount must be > 0");
+        require(_stakingPeriod > 0, "Staking period must be > 0");
+        require(_rewardRate > 0, "Reward rate must be > 0");
+        
         minStakeAmount = _minStakeAmount;
         stakingPeriod = _stakingPeriod;
         rewardRate = _rewardRate;
@@ -284,10 +299,11 @@ contract StakingPool is ReentrancyGuard, Ownable, Pausable {
      * @dev Retirar fees acumuladas (solo owner)
      */
     function withdrawFees() external onlyOwner {
-        uint256 balance = address(this).balance - totalStaked;
-        require(balance > 0, "No fees to withdraw");
+        uint256 balance = address(this).balance;
+        uint256 availableFees = balance.sub(totalStaked);
+        require(availableFees > 0, "No fees to withdraw");
         
-        (bool success, ) = payable(owner()).call{value: balance}("");
+        (bool success, ) = payable(owner()).call{value: availableFees}("");
         require(success, "Transfer failed");
     }
     

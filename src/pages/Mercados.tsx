@@ -9,11 +9,24 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Vote, Clock, TrendingUp, Users, ThumbsUp, ThumbsDown, AlertCircle } from "lucide-react";
+import { PlusCircle, Vote, Clock, TrendingUp, Users, ThumbsUp, ThumbsDown, AlertCircle, Lock, ExternalLink } from "lucide-react";
+import { useGeminiWallet } from "@/hooks/useGeminiWallet";
+import { Link } from "react-router-dom";
+import { chilizSpicy } from "@/lib/chains";
 
 const Mercados = () => {
+  const { address, isConnected, chainId, isOnCorrectNetwork, chilizSpicy } = useGeminiWallet()
   const [activeTab, setActiveTab] = useState("activos");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  
+  // Estado simulado de staking (se conectará con el contrato después)
+  const [userStaking, setUserStaking] = useState({
+    stakedAmount: '0',
+    tier: 'None'
+  })
+  
+  // Verificar si el usuario puede crear mercados
+  const canCreateMarket = parseFloat(userStaking.stakedAmount) >= 100
 
   const activeMarkets = [
     {
@@ -96,13 +109,38 @@ const Mercados = () => {
                 </p>
               </div>
               
-              <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-                <DialogTrigger asChild>
-                  <Button className="btn-trophy mt-4 md:mt-0">
-                    <PlusCircle className="mr-2 h-5 w-5" />
-                    Create Market
-                  </Button>
-                </DialogTrigger>
+              {!isConnected ? (
+                <div className="bg-red-900/20 border border-red-600 rounded-lg p-4 mt-4 md:mt-0">
+                  <div className="flex items-center gap-2 text-red-400">
+                    <AlertCircle className="h-4 w-4" />
+                    <span className="text-sm">Conecta tu wallet para crear mercados</span>
+                  </div>
+                </div>
+              ) : !isOnCorrectNetwork(chilizSpicy.id) ? (
+                <div className="bg-yellow-900/20 border border-yellow-600 rounded-lg p-4 mt-4 md:mt-0">
+                  <div className="flex items-center gap-2 text-yellow-400">
+                    <AlertCircle className="h-4 w-4" />
+                    <span className="text-sm">Cambia a Chiliz Spicy Testnet</span>
+                  </div>
+                </div>
+              ) : !canCreateMarket ? (
+                <div className="bg-orange-900/20 border border-orange-600 rounded-lg p-4 mt-4 md:mt-0">
+                  <div className="flex items-center gap-2 text-orange-400">
+                    <Lock className="h-4 w-4" />
+                    <span className="text-sm">Necesitas hacer staking de 100+ CHZ</span>
+                    <Link to="/staking" className="text-orange-300 hover:text-orange-200 underline">
+                      Ir a Staking
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="btn-trophy mt-4 md:mt-0">
+                      <PlusCircle className="mr-2 h-5 w-5" />
+                      Create Market
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>Create New Prediction</DialogTitle>
@@ -163,7 +201,8 @@ const Mercados = () => {
                     </div>
                   </div>
                 </DialogContent>
-              </Dialog>
+                </Dialog>
+              )}
             </div>
           </div>
 

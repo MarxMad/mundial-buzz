@@ -7,12 +7,13 @@ import Index from './pages/Index'
 import NotFound from './pages/NotFound'
 import Partidos from './pages/Partidos'
 import Mercados from './pages/Mercados'
+import Staking from './pages/Staking'
 import Perfil from './pages/Perfil'
 import Comunidad from './pages/Comunidad'
 
 const AppContent = () => {
   const location = useLocation()
-  const showMobileNav = ['/', '/partidos', '/comunidad', '/mercados', '/perfil'].includes(location.pathname)
+  const showMobileNav = ['/', '/partidos', '/comunidad', '/mercados', '/staking', '/perfil'].includes(location.pathname)
 
   return (
     <div className="relative">
@@ -20,6 +21,7 @@ const AppContent = () => {
         <Route path="/" element={<Index />} />
         <Route path="/partidos" element={<Partidos />} />
         <Route path="/mercados" element={<Mercados />} />
+        <Route path="/staking" element={<Staking />} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/comunidad" element={<Comunidad />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
